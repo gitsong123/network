@@ -110,7 +110,7 @@ const CATALOG = [
     name: 'explain_monetization',
     title: 'How money is (and is not) made',
     description:
-      'How money is (and is not) made with Amway Korea. goal_type = consumer | side_income | business_builder. Use when the user asks: is there cashback or points for buying (소비자 적립·캐시백), can I earn a side income (부업, 소액 수익), what does an ABO actually earn, what are the bonus rates (PV/BV, 3-21%), what do I have to spend or pay in tax. Always answer with the regulator\'s distribution (only 16.7% of Korean MLM sellers received any bonus in 2024) and the legal 35% bonus cap. Never present any figure as guaranteed income.',
+      'How money is (and is not) made with Amway Korea. goal_type = consumer | side_income | business_builder. Use when the user asks: is there cashback or points for buying (소비자 적립·캐시백), how spending becomes income (소비가 소득이 되는 구조, 프로슈머), how to buy everyday goods cheaper through the Cart Smart Order / jangs-o (장바구니 스마트 오더, 장스오, 정기배송, A Cliks Money), can I earn a side income (부업, 소액 수익), what does an ABO actually earn, what are the bonus rates (PV/BV, 3-21%), what do I have to spend or pay in tax. Returns the three-step prosumer path (switch everyday spending → own-volume bonus → sharing), the Smart Order reward table with its minimum-spend and first-order caveats, and the bonus-tier table. Always answer with the regulator\'s distribution (only 16.7% of Korean MLM sellers received any bonus in 2024), the legal 35% bonus cap and the fact that joining alone earns nothing. Never present any figure as guaranteed income.',
     schema: schema(
       'goal_type',
       'Which monetization path to explain.',
@@ -313,6 +313,16 @@ function monetization(args) {
 
   let body = renderRecord(record, 2);
   body += renderBonusTable(doc);
+  const prosumer = get(doc, 'prosumer_path');
+  if (prosumer !== undefined) {
+    body += renderRecord(prosumer, 2);
+  }
+  if (goal === 'consumer') {
+    const smartOrder = get(doc, 'smart_order');
+    if (smartOrder !== undefined) {
+      body += renderRecord(smartOrder, 2);
+    }
+  }
 
   const title = `수익 구조 — ${text(record, 'title_ko')}`;
   const intro =
@@ -582,6 +592,23 @@ function renderRecord(record, level) {
   const summaryEn = text(record, 'summary_en');
   if (summaryEn !== '') {
     out += `*English:* ${summaryEn}\n\n`;
+  }
+
+  // Optional compact table: { headers_ko: [...], rows_ko: [[...], ...], note_ko }
+  const table = get(record, 'table');
+  const headers = strings(table, 'headers_ko');
+  if (headers.length > 0) {
+    out += `| ${headers.join(' | ')} |\n`;
+    out += `| ${headers.map(() => '---').join(' | ')} |\n`;
+    for (const row of asArray(get(table, 'rows_ko')) || []) {
+      const cells = (asArray(row) || []).map((cell) => (typeof cell === 'string' ? cell : ''));
+      out += `| ${cells.join(' | ')} |\n`;
+    }
+    const note = text(table, 'note_ko');
+    if (note !== '') {
+      out += `\n> ${note}\n`;
+    }
+    out += '\n';
   }
 
   const sections = asArray(get(record, 'sections'));

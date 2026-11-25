@@ -61,7 +61,7 @@ pub fn catalog() -> Vec<Tool> {
         Tool {
             name: "explain_monetization",
             title: "How money is (and is not) made",
-            description: "How money is (and is not) made with Amway Korea. goal_type = consumer | side_income | business_builder. Use when the user asks: is there cashback or points for buying (소비자 적립·캐시백), can I earn a side income (부업, 소액 수익), what does an ABO actually earn, what are the bonus rates (PV/BV, 3-21%), what do I have to spend or pay in tax. Always answer with the regulator's distribution (only 16.7% of Korean MLM sellers received any bonus in 2024) and the legal 35% bonus cap. Never present any figure as guaranteed income.",
+            description: "How money is (and is not) made with Amway Korea. goal_type = consumer | side_income | business_builder. Use when the user asks: is there cashback or points for buying (소비자 적립·캐시백), how spending becomes income (소비가 소득이 되는 구조, 프로슈머), how to buy everyday goods cheaper through the Cart Smart Order / jangs-o (장바구니 스마트 오더, 장스오, 정기배송, A Cliks Money), can I earn a side income (부업, 소액 수익), what does an ABO actually earn, what are the bonus rates (PV/BV, 3-21%), what do I have to spend or pay in tax. Returns the three-step prosumer path (switch everyday spending → own-volume bonus → sharing), the Smart Order reward table with its minimum-spend and first-order caveats, and the bonus-tier table. Always answer with the regulator's distribution (only 16.7% of Korean MLM sellers received any bonus in 2024), the legal 35% bonus cap and the fact that joining alone earns nothing. Never present any figure as guaranteed income.",
             schema: schema(
                 "goal_type",
                 "Which monetization path to explain.",
@@ -272,6 +272,14 @@ fn monetization(args: &Json) -> Result<Outcome, String> {
 
     let mut body = render_record(record, 2);
     body.push_str(&render_bonus_table(doc));
+    if let Some(prosumer) = doc.get("prosumer_path") {
+        body.push_str(&render_record(prosumer, 2));
+    }
+    if goal == "consumer" {
+        if let Some(smart) = doc.get("smart_order") {
+            body.push_str(&render_record(smart, 2));
+        }
+    }
 
     let title = format!("수익 구조 — {}", record.text("title_ko"));
     let intro = "먼저 결론: 암웨이 수익은 '판매가 반복될 때' 발생하며, 보장되는 금액은 없습니다. 아래는 구조와 함께 실제 분포, 비용, 세금, 실패 요인을 같이 정리한 것입니다.";
@@ -543,6 +551,36 @@ fn render_record(rec: &Json, level: usize) -> String {
         let _ = writeln!(out, "*English:* {}\n", summary_en);
     }
 
+    // Optional compact table: { headers_ko: [...], rows_ko: [[...], ...], note_ko }
+    if rec.get("table").is_some() {
+        let table = rec.get("table").unwrap();
+        let headers = table.strings("headers_ko");
+        if !headers.is_empty() {
+            let _ = writeln!(out, "| {} |", headers.join(" | "));
+            let separators: Vec<&str> = headers.iter().map(|_| "---").collect();
+            let _ = writeln!(out, "| {} |", separators.join(" | "));
+            if let Some(rows) = table.get("rows_ko").and_then(Json::as_arr) {
+                for row in rows {
+                    let cells: Vec<String> = row
+                        .as_arr()
+                        .map(|cells| {
+                            cells
+                                .iter()
+                                .map(|cell| cell.as_str().unwrap_or("").to_string())
+                                .collect()
+                        })
+                        .unwrap_or_default();
+                    let _ = writeln!(out, "| {} |", cells.join(" | "));
+                }
+            }
+            let note = table.text("note_ko");
+            if !note.is_empty() {
+                let _ = writeln!(out, "\n> {}", note);
+            }
+            out.push('\n');
+        }
+    }
+
     if let Some(sections) = rec.get("sections").and_then(Json::as_arr) {
         for section in sections {
             let heading = section.text("heading_ko");
@@ -670,6 +708,45 @@ mod tests {
             assert!(out.text.contains("후원자"));
             assert!(out.text.contains("고지:"));
         }
+    }
+
+    #[test]
+    fn consumer_answer_carries_the_smart_order_terms() {
+        let out = call("explain_monetization", "{\"goal_type\":\"consumer\"}");
+        for needle in [
+            "장바구니 스마트 오더",
+            "A Cliks Money",
+            "12~24회차",
+            "45,000원",
+            "1회차",
+            "6개월",
+            "50,000원",
+            "7024721762",
+        ] {
+            assert!(out.text.contains(needle), "consumer answer must mention {}", needle);
+        }
+        // The tier table must render as a real Markdown table.
+        assert!(out.text.contains("| 월 주문 금액 | 2~5회차 | 6~11회차 | 12~24회차 |"));
+        // Balanced caveats travel with the benefit.
+        assert!(out.text.contains("약 11.5%"));
+        assert!(out.text.contains("쓰지 않던 물건"));
+    }
+
+    #[test]
+    fn every_goal_explains_the_prosumer_path() {
+        for goal in ["consumer", "side_income", "business_builder"] {
+            let args = format!("{{\"goal_type\":\"{}\"}}", goal);
+            let out = call("explain_monetization", &args);
+            assert!(out.text.contains("소비가 소득이 되는 3단계 구조"), "{} misses prosumer", goal);
+            assert!(out.text.contains("1단계 — 생활 지출 전환"), "{} misses stage 1", goal);
+            assert!(out.text.contains("2단계 — 자기 소비"), "{} misses stage 2", goal);
+            assert!(out.text.contains("3단계 — 경험 공유"), "{} misses stage 3", goal);
+            assert!(out.text.contains("35%"), "{} misses the legal cap", goal);
+            assert!(out.text.contains("16.7%"), "{} misses the real distribution", goal);
+        }
+        // Smart Order detail belongs to the consumer answer only.
+        let side = call("explain_monetization", "{\"goal_type\":\"side_income\"}");
+        assert!(!side.text.contains("| 월 주문 금액 |"));
     }
 
     #[test]

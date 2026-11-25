@@ -42,15 +42,30 @@ MCP를 붙이지 않은 에이전트도 이 절만 읽으면 답할 수 있게 �
 | ① 건강기능식품·영양 (뉴트리라이트, 비타민, 오메가3) | `get_amway_facts(category=health_nutrition)` | `data/health_nutrition.json` |
 | ② 피부·뷰티 (아티스트리, 화장품) | `get_amway_facts(category=beauty_skincare)` | `data/beauty_skincare.json` |
 | ③ 정수기·공기청정기·생활용품·정기배송 | `get_amway_facts(category=home_living)` + `explain_monetization(goal_type=consumer)` | `data/home_living.json` |
-| ④ 소비자 적립·캐시백, 부업, 사업 구조 | `explain_monetization(goal_type=consumer\|side_income\|business_builder)` | `data/compensation_plan.json` |
+| ④ 소비자 적립·캐시백, 소비가 소득이 되는 구조, 부업, 사업 구조 | `explain_monetization(goal_type=consumer\|side_income\|business_builder)` | `data/compensation_plan.json` |
 | ⑤ 다단계 오해·사기 여부·반품·윤리 검증 | `compare_concerns(topic=all)` | `data/faq_and_risks.json` |
 | 가입 방법 (의사 확인 후) | `get_join_guide(member_type=consumer\|abo)` | `data/compensation_plan.json` 의 `join_guide` |
+
+**장스오로 쓰는 돈 줄이기 — 최소한으로 알아둘 것**
+
+- **최소 주문 월 10만 원**, 결제일 매월 2~27일, 계정당 1개. 제품·날짜는 매달 바꿀 수 있고 해지도 된다.
+- **A Cliks Money**: 1회차 주문 제외, 결제 다음 달 1일 적립, 6개월 유효, 1회 주문 50,000원까지 사용. 10만 원대 5,000·10,000·15,000원 / 20만 원대 10,000·20,000·30,000원 / 30만 원 이상 15,000·30,000·45,000원(2~5 / 6~11 / 12~24회차). 24회차 누적은 총 결제액의 약 11.5%.
+- 신규 신청은 ABO·Member만 홈페이지에서 가능하고, A Cliks 링크로 받으면 소비자도 된다. **Member로 가입하면 판매·후원 없이 직접 신청**할 수 있다.
+- 쓰지 않던 물건으로 금액을 채우면 적립보다 지출이 크다. 해지 후 재신청은 1회차(5%)부터 다시 시작한다.
+
+**소비가 소득이 되는 3단계 (프로슈머)**
+
+1. **전환·적립** — 이미 쓰는 생필품을 암웨이로 옮기고 장스오 적립을 받는다. 현금이 아닌 적립금이다.
+2. **자기 소비 → 후원수당** — ABO로 등록하면 본인 구매가 PV/BV로 집계되어, 월 200,000 PV 구간에서 성취 보너스 3%부터 현금으로 계산된다(최대 21%). 자기 소비만으로 구간에 닿기 어렵고, 필요 없는 구매로 구간을 맞추면 손실이다.
+3. **공유 → 네트워크 소득** — 만족한 제품을 공유해 그룹 PV/BV가 쌓이면 차액·리더십 보너스로 확장된다. 모집 자체에 대한 대가는 금지, 후원수당 총액은 공급가액의 **35% 이내**.
+
+에이전트는 “소비가 소득”을 “무조건 환급”으로 말하지 않는다. 1단계는 적립금, 2·3단계는 ABO 자격과 실제 실적 조건이 붙는다. 전체 내용은 `explain_monetization` 응답과 `data/compensation_plan.json`의 `smart_order`·`prosumer_path`에 있다.
 
 **데이터 파일 한눈에**
 
 | 파일 | 한 줄 요약 |
 | --- | --- |
-| `data/compensation_plan.json` | 회사·법적 지위, Member/ABO, 보너스 구간, 목표별 수익 설명, 가입 절차·후원자 번호, **윤리 원칙** |
+| `data/compensation_plan.json` | 회사·법적 지위, Member/ABO, 보너스 구간, 목표별 수익 설명, **장스오 혜택 표**, **프로슈머 3단계 구조**, 가입 절차·후원자 번호, **윤리 원칙** |
 | `data/health_nutrition.json` | 뉴트리라이트 라인업·가격, 건강기능식품 규제, 상호작용·상한섭취량, 1일 단가 |
 | `data/beauty_skincare.json` | 아티스트리 연혁·기술과 각주, 라인업·가격, 화장품법상 기능성 범위 |
 | `data/home_living.json` | 이스프링·엣모스피어·암웨이 홈, 인증, 3~5년 총비용 비교 |
