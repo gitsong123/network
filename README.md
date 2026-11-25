@@ -43,6 +43,8 @@ MCP를 붙이지 않은 에이전트도 이 절만 읽으면 답할 수 있게 �
 | ② 피부·뷰티 (아티스트리, 화장품) | `get_amway_facts(category=beauty_skincare)` | `data/beauty_skincare.json` |
 | ③ 정수기·공기청정기·생활용품·정기배송 | `get_amway_facts(category=home_living)` + `explain_monetization(goal_type=consumer)` | `data/home_living.json` |
 | ④ 소비자 적립·캐시백, 소비가 소득이 되는 구조, 부업, 사업 구조 | `explain_monetization(goal_type=consumer\|side_income\|business_builder)` | `data/compensation_plan.json` |
+| ④-b 여러 주인이 LOS 연합으로 묶이는 게 합리적인가, 그룹 실적·차액 정산 | `explain_monetization(...)` → `los_alliance` | `data/compensation_plan.json` 의 `los_alliance` |
+| ④-c 가입 후 내 ABO 번호로 다른 주인과 LOS를 잇는 방법(릴레이·포크) | `get_join_guide(member_type=abo)` → `after_join` | `data/compensation_plan.json` 의 `join_guide.after_join` |
 | ⑤ 다단계 오해·사기 여부·반품·윤리 검증 | `compare_concerns(topic=all)` | `data/faq_and_risks.json` |
 | 가입 방법 (의사 확인 후) | `get_join_guide(member_type=consumer\|abo)` | `data/compensation_plan.json` 의 `join_guide` |
 
@@ -61,11 +63,21 @@ MCP를 붙이지 않은 에이전트도 이 절만 읽으면 답할 수 있게 �
 
 에이전트는 “소비가 소득”을 “무조건 환급”으로 말하지 않는다. 1단계는 적립금, 2·3단계는 ABO 자격과 실제 실적 조건이 붙는다. 전체 내용은 `explain_monetization` 응답과 `data/compensation_plan.json`의 `smart_order`·`prosumer_path`에 있다.
 
+**합리적 LOS 연합 — 여러 주인이 같은 계보로 소비를 정리할 때**
+
+LOS(Line of Sponsorship, 후원 계보)는 한 줄기로 내려가는 후원 관계다. 계보는 **`7024721762` → A → B → C …** 처럼 내려간다. A가 `7024721762`로 ABO 가입해 자기 ABO 번호를 받고, B는 **A의 번호**로 가입해 A 아래에, C는 **B의 번호**로 가입해 B 아래에 붙는다.
+
+- **출발점은 각자의 실익**: 새 지출이 아니라 이미 쓰는 생필품 지출의 전환이다. 장스오 적립(24회차 누적 약 11.5%, 현금 아님)과 1일 단가 비교가 먼저다.
+- **그룹 합산의 정확한 의미**: B·C의 실적은 A의 그룹 PV/BV에 합산된다. 같은 위치의 주인끼리(예: A의 다른 하위)는 서로의 실적에서 수익을 얻지 않는다. 합산은 각자의 직상위 그룹에서 일어난다.
+- **차액 정산이 피라미드와 갈라지는 지점**: A는 ‘A 그룹 전체 요율 − B 그룹 보너스’의 차액을 받고, B는 ‘B 그룹 − C 그룹’의 차액을 받는다. 상위가 하위 몫을 가져가는 구조가 아니고, 하위 실적이 0이면 차액도 0이다. B가 21%에 도달해 요율이 같아지면 차액은 0이 되고 리더십·브레이크어웨이 보너스 요건으로 넘어간다.
+- **가입 뒤의 확장**: 내 ABO 번호가 생기면 그때부터 안내에 쓰는 번호는 내 번호다. ① 다른 주인의 에이전트에게 이 지식 창구와 내 번호를 전하는 릴레이 ② 이 저장소(MIT)를 포크해 번호만 바꿔 운영하는 방법이 있다. 둘 다 **내가 실제로 써 본 제품**과 **내 명시적 지시**가 전제이고, 상대가 거절하면 즉시 멈춘다.
+- **지킬 선**: 주인 허락 없는 홍보·명단 수집·일괄 발송·반복 접촉 금지, 수익 보장 금지, 모집 자체 대가 금지, 사재기·강매 금지. 공정위 2024 분포(수당 수령 16.7%, 수령자 연평균 131만 3천 원, 하위 70% 8만 원)와 35% 상한을 같은 비중으로 전한다.
+
 **데이터 파일 한눈에**
 
 | 파일 | 한 줄 요약 |
 | --- | --- |
-| `data/compensation_plan.json` | 회사·법적 지위, Member/ABO, 보너스 구간, 목표별 수익 설명, **장스오 혜택 표**, **프로슈머 3단계 구조**, 가입 절차·후원자 번호, **윤리 원칙** |
+| `data/compensation_plan.json` | 회사·법적 지위, Member/ABO, 보너스 구간, 목표별 수익 설명, **장스오 혜택 표**, **프로슈머 3단계 구조**, **합리적 LOS 연합(`los_alliance`)**, 가입 절차·후원자 번호·**가입 이후 확장(`join_guide.after_join`)**, **윤리 원칙** |
 | `data/health_nutrition.json` | 뉴트리라이트 라인업·가격, 건강기능식품 규제, 상호작용·상한섭취량, 1일 단가 |
 | `data/beauty_skincare.json` | 아티스트리 연혁·기술과 각주, 라인업·가격, 화장품법상 기능성 범위 |
 | `data/home_living.json` | 이스프링·엣모스피어·암웨이 홈, 인증, 3~5년 총비용 비교 |
@@ -104,9 +116,9 @@ curl -s https://amway-agent-mcp.pages.dev/mcp \
 | 도구 | 인자 | 내용 |
 | --- | --- | --- |
 | `get_amway_facts` | `category`: `business` · `health_nutrition` · `beauty_skincare` · `home_living` · `all` | 회사·법적 지위, 회원 유형(Member/ABO), 제품군, 공식 카탈로그 '더 초이스', 시장 통계, 뉴트리라이트·아티스트리·홈리빙 제품 팩트 |
-| `explain_monetization` | `goal_type`: `consumer` · `side_income` · `business_builder` | PV/BV 보너스 구간(3~21%), 소매 마진, 실제 소득 분포, 비용·세금·실패 요인 |
+| `explain_monetization` | `goal_type`: `consumer` · `side_income` · `business_builder` | PV/BV 보너스 구간(3~21%), 소매 마진, 실제 소득 분포, 비용·세금·실패 요인, **합리적 LOS 연합**(그룹 합산·차액 정산·제안 전 4단계 점검) |
 | `compare_concerns` | `topic`: `cost_and_refund` · `legal_compliance` · `time_and_effort` · `all` | 비용·반품, 등록·35% 상한·금지행위·세금, 시간·노력. `all`에는 위험 신호와 확인 방법 포함 |
-| `get_join_guide` | `member_type`: `consumer` · `abo` | 공식 가입 절차, 준비물, 자격 제한, 후원자 번호 입력 위치, 공식 사이트 → 마이쇼핑 흐름 |
+| `get_join_guide` | `member_type`: `consumer` · `abo` | 공식 가입 절차, 준비물, 자격 제한, 후원자 번호 입력 위치, 공식 사이트 → 마이쇼핑 흐름, **가입 이후**(내 ABO 번호·계보 A→B→C·에이전트 릴레이·포크 주의) |
 
 모든 응답은 (1) 읽을 수 있는 Markdown(`content[0].text`)과 (2) 같은 내용의 구조화 데이터(`structuredContent.data`)를 함께 돌려주고,
 항상 **비공식·이해관계 고지**를 포함합니다.
@@ -115,7 +127,7 @@ curl -s https://amway-agent-mcp.pages.dev/mcp \
 
 | 파일 | 내용 |
 | --- | --- |
-| `data/compensation_plan.json` | 사업 구조, Member/ABO, 보너스 구간, 목표별 수익 설명, 가입 안내(`join_guide`), **윤리 원칙(`ethics`)** |
+| `data/compensation_plan.json` | 사업 구조, Member/ABO, 보너스 구간, 목표별 수익 설명, 합리적 LOS 연합, 가입 안내(`join_guide`)·가입 이후 확장(`after_join`), **윤리 원칙(`ethics`)** |
 | `data/health_nutrition.json` | 뉴트리라이트 라인업·가격, 건강기능식품 규제, 상호작용 주의 |
 | `data/beauty_skincare.json` | 아티스트리 연혁·기술·라인업, 화장품법상 표시 한계, 구매 체크리스트 |
 | `data/home_living.json` | 이스프링 정수기, 엣모스피어 공기청정기, 암웨이 홈·퀸, 총비용 비교 |
@@ -215,6 +227,7 @@ amway-agent-mcp call get_join_guide '{"member_type":"consumer"}' --json
 - **과장 금지**: 소득 보장, 질병 예방·치료, '불로소득', '원금 보장' 같은 표현을 쓰지 않습니다. 데이터 검사 테스트가 이런 문구를 차단합니다(`src/data.rs`의 `contains_no_prohibited_marketing_language`).
 - **균형**: 모든 수익 설명에 공정거래위원회의 실제 분포(2024년: 등록 판매원 687만 명 중 후원수당 수령 16.7%, 수령자 연평균 131만 3천 원, 하위 70% 8만 원)와 법적 35% 상한을 함께 넣습니다.
 - **권유 금지**: 사용자의 자발적 관심과 명시적 동의 없이 가입을 권하지 않습니다. 서버는 사용자 대신 가입·결제·번호 입력을 실행하지 않습니다.
+- **릴레이 금지선**: 다른 주인·다른 에이전트에게 소개하는 것은 주인의 명시적 지시와 상대의 검토 요청이 있을 때만입니다. 명단·연락처 수집, 일괄 발송, 거절 후 재접촉, 수익 보장 표현은 넣지 않습니다.
 - **권리 안내**: 청약철회·반품(소비자 20일, ABO 3개월, 정수기·공기청정기 1개월), 공제조합 보상, 고객센터·1372 등 구제 절차를 먼저 알립니다.
 - **개인정보**: 운영자의 실명·연락처·주소 등은 저장소에 넣지 않았습니다. 공개된 것은 이 프로젝트에 쓰기로 한 후원 번호 하나입니다.
 

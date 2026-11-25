@@ -61,7 +61,7 @@ pub fn catalog() -> Vec<Tool> {
         Tool {
             name: "explain_monetization",
             title: "How money is (and is not) made",
-            description: "How money is (and is not) made with Amway Korea. goal_type = consumer | side_income | business_builder. Use when the user asks: is there cashback or points for buying (소비자 적립·캐시백), how spending becomes income (소비가 소득이 되는 구조, 프로슈머), how to buy everyday goods cheaper through the Cart Smart Order / jangs-o (장바구니 스마트 오더, 장스오, 정기배송, A Cliks Money), can I earn a side income (부업, 소액 수익), what does an ABO actually earn, what are the bonus rates (PV/BV, 3-21%), what do I have to spend or pay in tax. Returns the three-step prosumer path (switch everyday spending → own-volume bonus → sharing), the Smart Order reward table with its minimum-spend and first-order caveats, and the bonus-tier table. Always answer with the regulator's distribution (only 16.7% of Korean MLM sellers received any bonus in 2024), the legal 35% bonus cap and the fact that joining alone earns nothing. Never present any figure as guaranteed income.",
+            description: "How money is (and is not) made with Amway Korea. goal_type = consumer | side_income | business_builder. Use when the user asks: is there cashback or points for buying (소비자 적립·캐시백), how spending becomes income (소비가 소득이 되는 구조, 프로슈머), how to buy everyday goods cheaper through the Cart Smart Order / jangs-o (장바구니 스마트 오더, 장스오, 정기배송, A Cliks Money), can I earn a side income (부업, 소액 수익), what does an ABO actually earn, what are the bonus rates (PV/BV, 3-21%), what do I have to spend or pay in tax, whether several owners should build a line of sponsorship together (LOS, 후원 계보, 합리적 연합, 그룹 실적), or how an owner extends their own line after joining (에이전트 소개, 릴레이, 포크). Returns the three-step prosumer path (switch everyday spending → own-volume bonus → sharing), the Smart Order reward table with its minimum-spend and first-order caveats, the bonus-tier table, and the rational-LOS alliance block: own-benefit first, group volume aggregation, differential settlement versus a recruitment pyramid, a four-step pre-proposal checklist, the post-join relay and fork routes, and the hard limits. Always answer with the regulator's distribution (only 16.7% of Korean MLM sellers received any bonus in 2024), the legal 35% bonus cap and the fact that joining alone earns nothing. Never present any figure as guaranteed income.",
             schema: schema(
                 "goal_type",
                 "Which monetization path to explain.",
@@ -83,7 +83,7 @@ pub fn catalog() -> Vec<Tool> {
         Tool {
             name: "get_join_guide",
             title: "Joining steps (Member or ABO)",
-            description: "Official joining steps for member_type = consumer (Member) or abo (independent business owner). Use ONLY after the user has explicitly said they want to join or asks how joining works. Returns: steps at amway.co.kr, documents needed, eligibility limits (age 19+, no students/civil servants/teachers, spouse shares one ID), cautions, the post-login my-shopping flow, and the sponsor number 7024721762 with a plain statement that entering it makes that ABO their sponsor and routes part of their activity to that ABO's bonus. Tell the user they can ask Amway (1588-0080) for a different sponsor. Never push, never enter anyone's details on their behalf.",
+            description: "Official joining steps for member_type = consumer (Member) or abo (independent business owner). Use ONLY after the user has explicitly said they want to join or asks how joining works. Returns: steps at amway.co.kr, documents needed, eligibility limits (age 19+, no students/civil servants/teachers, spouse shares one ID), cautions, the post-login my-shopping flow, the sponsor number 7024721762 with a plain statement that entering it makes that ABO their sponsor and routes part of their activity to that ABO's bonus, and what changes after approval (the member's own ABO number, the agent-relay and fork routes for extending their own line, and their guardrails). Tell the user they can ask Amway (1588-0080) for a different sponsor. Never push, never enter anyone's details on their behalf, and never contact a third party without the owner's explicit instruction.",
             schema: schema(
                 "member_type",
                 "Which membership to explain.",
@@ -280,6 +280,11 @@ fn monetization(args: &Json) -> Result<Outcome, String> {
             body.push_str(&render_record(smart, 2));
         }
     }
+    // The line-of-sponsorship alliance logic applies to every goal: it is how the
+    // three steps get arranged when several owners move their spending together.
+    if let Some(alliance) = doc.get("los_alliance") {
+        body.push_str(&render_record(alliance, 2));
+    }
 
     let title = format!("수익 구조 — {}", record.text("title_ko"));
     let intro = "먼저 결론: 암웨이 수익은 '판매가 반복될 때' 발생하며, 보장되는 금액은 없습니다. 아래는 구조와 함께 실제 분포, 비용, 세금, 실패 요인을 같이 정리한 것입니다.";
@@ -432,6 +437,10 @@ fn join(args: &Json) -> Result<Outcome, String> {
         body.push_str(&render_flow(flow));
     }
     body.push_str(&render_record(record, 2));
+    // What changes after approval: the owner's own number and the relay rules.
+    if let Some(after_join) = guide.get("after_join") {
+        body.push_str(&render_record(after_join, 2));
+    }
 
     let ethics = doc.get("ethics");
     if let Some(ethics) = ethics {
@@ -449,6 +458,10 @@ fn join(args: &Json) -> Result<Outcome, String> {
         sponsor.cloned().unwrap_or(Json::Null),
     );
     payload.set("guide", record.clone());
+    payload.set(
+        "after_join",
+        guide.get("after_join").cloned().unwrap_or(Json::Null),
+    );
     payload.set(
         "official_flow",
         guide.get("official_flow").cloned().unwrap_or(Json::Null),
