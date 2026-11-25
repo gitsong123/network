@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "schema": "amway-kr/home-living@1",
+    "market": "KR",
+    "checked_on": "2026-11-25",
+    "publisher_note": "가격·인증·성능 표시는 2026-11-25 공식몰 및 제품 페이지 기준이며 수시로 바뀝니다. 설치·소모품 비용은 별도이므로 총비용으로 비교해야 합니다. 이 자료는 ABO가 정리한 것으로 성능을 보장하지 않습니다.",
+    "sources": [
+      { "title_ko": "한국암웨이 공식 - 이스프링(eSpring)", "url": "https://www.amway.co.kr/about-amway/espring" },
+      { "title_ko": "한국암웨이 공식 - 엣모스피어(Atmosphere)", "url": "https://www.amway.co.kr/about-amway/atmosphere" },
+      { "title_ko": "한국암웨이 공식 - 한국암웨이 개요(브랜드 목록)", "url": "https://www.amway.co.kr/about-amway/amway-korea/outline" },
+      { "title_ko": "한국암웨이 공식 - 서비스센터·공임비 안내", "url": "https://www.amway.co.kr/customer/guide/after-service" },
+      { "title_ko": "한국암웨이 공식 - 반품·소비자만족보증제도", "url": "https://www.amway.co.kr/customer/cs/cs-center" }
+    ]
+  },
+  "facts": {
+    "id": "home_living",
+    "title_ko": "홈리빙: 정수기·공기청정기·생활용품",
+    "title_en": "Home living: water purifier, air purifier and household products",
+    "summary_ko": "암웨이의 홈리빙 라인은 이스프링 정수기, 엣모스피어 스카이·블루 공기청정기, 암웨이 홈·퀸 생활용품으로 구성된다. 초기 구매비가 크고 필터·설치 같은 소모성 비용이 계속 드는 구조라, 렌탈·구독 대안과 총비용(3~5년)으로 비교해야 한다. 성능은 NSF·WQA, 영국 알레르기 재단 같은 제3자 인증과 시험성적서로 확인할 수 있다.",
+    "summary_en": "Amway's home living line covers the eSpring water purifier, Atmosphere SKY/BLUE air purifiers and Amway Home cleaning products. Upfront cost is high and filters/installation keep costing, so compare total cost of ownership over 3-5 years against rental and subscription alternatives.",
+    "key_points_en": [
+      "eSpring: official claims 170+ contaminants and microplastics removed while minerals are kept; NSF and WQA certified; 5-year warranty; filter replaced once a year.",
+      "eSpring running cost is advertised as about 1,090 KRW a day for 13.6 litres; the unit itself was listed at 1,488,000 KRW on 2026-11-25.",
+      "Atmosphere SKY/BLUE: HEPA + deodorising filters, certified by Allergy UK and ECARF; BLUE claims 99.99% removal down to 0.0024 µm particles (company figure).",
+      "These are appliances: installation fees, filters and electricity are recurring costs that the sticker price hides.",
+      "Returns: purifiers and air purifiers have a 1-month dissatisfaction window (3 months for unopened stock), not the usual 3 months."
+    ],
+    "sections": [
+      {
+        "heading_ko": "브랜드 구성",
+        "bullets_ko": [
+          "이스프링(eSpring): 가정용 정수기. 전환기형과 퍼싯(주방 수도꼭지 직결)형이 있다.",
+          "엣모스피어(Atmosphere): 공기청정기. 상위 모델 스카이(SKY)와 소형 블루(BLUE).",
+          "암웨이 홈·퀸(Amway Home / Queen): 주방세제·세탁세제 등 생활용품. 회사는 '프리미엄 세제'로 소개한다.",
+          "이 제품들은 공식몰과 ABC에서 판매되고, 정수기·공기청정기는 설치 기사 방문이 필요하다."
+        ]
+      },
+      {
+        "heading_ko": "이스프링 정수기 (공식 설명)",
+        "bullets_ko": [
+          "정수 성능: 물속 미네랄은 남기고 미세플라스틱과 170가지 이상의 오염물질을 제거한다고 안내한다.",
+          "인증: NSF와 WQA 인증에 더해 5년 품질 보증을 제공한다고 밝힌다. 구매 전 인증서와 모델명을 확인할 수 있다.",
+          "편의: 필터 교체 시 튜브를 분리할 필요가 없고, 좁은 싱크대 하부 공간을 고려한 설계. Amway Healthy Home 앱으로 사용량·필터 상태를 확인한다.",
+          "비용: 필터는 1년에 1회 교체. 회사는 '하루 1,090원, 13.6리터'를 사용 비용으로 제시한다.",
+          "가격(2026-11-25 공식몰): 전환기형 1,488,000원, 3중 필터 카트리지 272,000원, 퍼싯형 스마트페이 선급금 1,664,000원.",
+          "설치·이전: 90일 이내 설치와 철거는 무료, 90일 경과 설치·이전 설치는 50,000원(공식 서비스센터 공임비 안내)."
+        ],
+        "note_ko": "'170가지 이상', '하루 1,090원'은 회사가 제시한 조건부 수치다. 실제 정수 성능은 모델·필터·수질에 따라 달라지고, 하루 비용은 사용량과 필터 교체 주기를 전제로 계산된 값이다."
+      },
+      {
+        "heading_ko": "엣모스피어 공기청정기 (공식 설명)",
+        "bullets_ko": [
+          "스카이: 고성능 헤파필터·초강력 탈취필터·공기순환 설계를 내세우고, 영국 알레르기 재단(Allergy UK)과 유럽 알레르기 연구 재단(ECARF) 인증을 표시한다.",
+          "블루: 0.0024마이크로미터 입자까지 99.99% 감소를 표시한다(회사 시험 조건 기준). 크기·무게를 줄이고 소음은 낮췄다고 설명한다.",
+          "스마트 기능: Amway Healthy Home 앱으로 실내 공기 상태와 필터를 관리한다.",
+          "가격(2026-11-25 공식몰): 블루 896,000원, 스카이 집진(헤파)필터 188,000원, 스카이 탈취필터 127,000원, 블루 일체형 필터 165,000원.",
+          "필터는 소모품이라 교체 주기와 연간 비용을 미리 계산해야 한다. 사용 면적(㎡)과 CADR을 대안 제품과 같은 기준으로 비교한다."
+        ]
+      },
+      {
+        "heading_ko": "생활용품(암웨이 홈·퀸)",
+        "bullets_ko": [
+          "주방세제·세탁세제·주방 세정용품 등을 취급한다. 농축 제품은 희석해 쓰는 방식으로 안내된다.",
+          "일반 마트 제품과 비교할 때는 정가가 아니라 '희석 후 1회 사용 비용'으로 환산해야 실제 차이를 알 수 있다.",
+          "피부 자극·잔류 세정제에 민감한 경우 전성분과 사용법을 확인한다."
+        ]
+      },
+      {
+        "heading_ko": "구매 판단: 총비용으로 비교",
+        "bullets_ko": [
+          "정수기·공기청정기는 본체 가격보다 3~5년 총비용(본체 + 필터 + 설치 + 전기)이 중요하다. 렌탈·구독 서비스와 같은 기간으로 비교한다.",
+          "설치 가능 여부, 이사 시 이전 설치비, 필터 재고와 배송 기간을 미리 확인한다.",
+          "성능 표시는 시험성적서·인증서 기준으로 확인한다. 인증 번호와 시험 조건을 물어보면 과장 여부를 가릴 수 있다.",
+          "정수기·공기청정기·인덕션 레인지는 소비자만족보증제도상 불만족 반품 기간이 구입일부터 1개월로, 일반 제품(3개월)보다 짧다. 재고 반품은 3개월 이내이며 설치 후 반품이 불가한 제품(예: 스마트 바이크)도 있다."
+        ]
+      },
+      {
+        "heading_ko": "표시·광고에서 조심할 것",
+        "bullets_ko": [
+          "'질병 치료', '아토피 완치', '탈모 치료' 같은 표현은 정수기·공기청정기에도 쓸 수 없다.",
+          "인증 마크와 수치는 조건(시험 기관, 입자 크기, 사용 면적)이 붙는다. 조건 없이 '99.99%'만 말하는 설명은 확인이 필요하다.",
+          "전기용품·생활용품은 안전 인증(KC)과 에너지 효율 등급을 확인한다."
+        ]
+      }
+    ],
+    "questions_ko": [
+      "본체 가격뿐 아니라 3년 필터·설치·전기 비용까지 계산했는가?",
+      "렌탈·구독 대안과 같은 조건으로 비교했는가?",
+      "인증서와 시험 조건을 직접 확인했는가?",
+      "설치 환경(싱크대 하부 공간, 콘센트, 사용 면적)이 맞는가?"
+    ],
+    "checkpoints": [
+      { "label_ko": "이스프링 브랜드·인증", "url": "https://www.amway.co.kr/about-amway/espring" },
+      { "label_ko": "엣모스피어 브랜드·인증", "url": "https://www.amway.co.kr/about-amway/atmosphere" },
+      { "label_ko": "설치·A/S 공임비 안내", "url": "https://www.amway.co.kr/customer/guide/after-service" }
+    ]
+  }
+}

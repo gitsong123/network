@@ -1,0 +1,122 @@
+{
+  "meta": {
+    "schema": "amway-kr/beauty-skincare@2",
+    "market": "KR",
+    "checked_on": "2026-11-25",
+    "publisher_note": "화장품 정보는 일반 정보이며 피부과적 진단·치료를 대신하지 않습니다. 가격·라인업은 2026-11-25 공식몰 표시 기준이며 수시로 바뀝니다. 이 자료는 ABO가 정리한 것으로 특정 제품의 효능을 보장하지 않습니다.",
+    "sources": [
+      { "title_ko": "한국암웨이 공식 - 아티스트리 브랜드", "url": "https://www.amway.co.kr/about-amway/artistry" },
+      { "title_ko": "한국암웨이 공식 - 아티스트리 테크놀로지(5-배리어)", "url": "https://www.amway.co.kr/about-amway/artistry/technology" },
+      { "title_ko": "한국암웨이 공식 - 한국암웨이 개요(브랜드·ABC)", "url": "https://www.amway.co.kr/about-amway/amway-korea/outline" },
+      { "title_ko": "식품의약품안전처 - 화장품 정책·기능성화장품", "url": "https://www.mfds.go.kr" },
+      { "title_ko": "화장품법(국가법령정보센터)", "url": "https://www.law.go.kr" }
+    ]
+  },
+  "facts": {
+    "id": "beauty_skincare",
+    "title_ko": "아티스트리와 스킨케어",
+    "title_en": "Artistry skincare and Korean cosmetics rules",
+    "summary_ko": "아티스트리는 1958년 에디스 렌보그가 뉴트리라이트 원료로 만든 스킨케어 브랜드 'ERC'에서 출발해, 1972년 컬러 메이크업 브랜드 아티스트리와 통합된 암웨이의 프리미엄 뷰티 브랜드다. 뉴트리라이트 농장 원료(파이토 뉴트리언트)와 피부과학을 결합하고 추적관리 시스템을 내세운다. 기대할 수 있는 것은 세정·보습·자외선차단과 기능성 인정 범위(미백·주름개선)이며, '재생·치료·독소 배출'은 법적으로도 쓸 수 없다. 공식 수치(350%, 600% 등)는 원료·시험관(in-vitro) 기준이라는 각주를 함께 읽어야 한다.",
+    "summary_en": "Artistry grew out of Edith Rehnborg's 1958 'ERC' skincare line made with Nutrilite ingredients and merged with the Artistry colour brand in 1972. It combines Nutrilite-grown phyto ingredients with skin science and a seed-to-product traceability system. Expect cleansing, moisturising, UV protection and MFDS-approved functional claims only.",
+    "key_points_en": [
+      "1958 ERC (Edith Rehnborg) → 1968 first Artistry colour line → 1972 merged under the Artistry name; brand line-up today: Skin Nutrition, Longevity, Labs, Studio Skin, Devices (Derma-Architect), Makeup.",
+      "Official technology story: Phyto Nutrient Technology, Rehnborg white chia seed (US patent 10,357,006), 900+ collaborating scientists, 200+ global patents (Amway beauty R&D, as of Sep 2025), a 1,300+ ingredient 'No List', 400+ quality tests.",
+      "Read the footnotes: headline percentages such as 350% and 600% are in-vitro/ex-vivo results for raw materials, not finished-product claims.",
+      "Only MFDS-reviewed functional cosmetics may claim brightening, wrinkle improvement or UV protection; 'treatment', 'regeneration' and 'detox' are not allowed.",
+      "Prices are kept close to list and there is no drugstore channel, but you can try products at ABC / A STATION stores in 14 regions."
+    ],
+    "sections": [
+      {
+        "heading_ko": "브랜드 연혁",
+        "bullets_ko": [
+          "1958년, 뉴트리라이트 창립자 칼 렌보그의 아내 에디스 렌보그가 직접 재배한 뉴트리라이트 원료를 쓴 스킨케어 브랜드 'ERC'를 만들었다.",
+          "1968년 암웨이가 첫 아티스트리 컬러 메이크업 라인을 선보였고, 1972년 ERC와 아티스트리가 '아티스트리'로 통합됐다.",
+          "공식 표기는 'SINCE 1958', 그리고 '뉴트리라이트 90년 식물 영양 + 아티스트리 67년 피부과학'의 결합이다.",
+          "브랜드의 핵심 주장은 식물 유래 성분(파이토 뉴트리언트)과 피부과학 연구를 함께 쓴다는 것이다."
+        ]
+      },
+      {
+        "heading_ko": "공식 기술·원료 팩트 (회사 발표 기준)",
+        "bullets_ko": [
+          "파이토 뉴트리언트 테크놀로지: 뉴트리라이트 농장에서 재배한 원료를 유효 성분이 최고조인 시점에 수확해 추출한다는 설명.",
+          "렌보그 화이트 치아씨드: 9년 넘게 약 7,824종의 식물과 12개 항목을 분석해 93,888개의 측정 결과를 얻어 개발했다고 밝힌다(미국 특허 10,357,006). 일부 제품에 쓰인다.",
+          "연구 규모: 전 세계 900명 이상의 과학자와 협력, 200개 이상의 글로벌 특허(2025년 9월 기준 암웨이 글로벌 뷰티 R&D 성과, 특정 제품에 국한된 수치가 아님).",
+          "품질 기준: 1,300가지 이상의 성분을 배제하는 내부 'No List', 1,800종의 자연 유래 성분 데이터, 제품 하나에 400회 이상의 내부 품질 테스트.",
+          "추적관리 시스템: 원료의 재배부터 완제품까지 기록하고, 제품 추적 서비스로 이력을 확인할 수 있다(일부 원료·일부 제품 한정).",
+          "5-배리어 테크놀로지: 퓨리파이·밸런스·리빌드·모이스처라이즈·프로텍트의 5단계 설명. 여기서 언급되는 '방어력 350%', '600% 개선' 같은 수치는 시험관(in-vitro)·ex-vivo 원료 실험 결과이며 특정 제품의 효능효과와 직접 관련 없다고 공식 각주에 적혀 있다."
+        ],
+        "note_ko": "이 항목은 회사가 공개한 설명을 그대로 정리한 것이다. 수치가 붙은 표현은 각주 조건(원료 기준, 일부 제품, 시험관 시험)을 함께 읽어야 하며, 완제품의 임상 결과로 오해하면 안 된다."
+      },
+      {
+        "heading_ko": "공식 라인업",
+        "bullets_ko": [
+          "스킨 뉴트리션: 파이토 영양을 담은 데일리 스킨케어(클렌저·토너·세럼·크림·선케어).",
+          "롱제비티: 피부 건강 수명을 내건 라인.",
+          "랩스: 집중 타겟팅 솔루션(예: 일루미네이팅 시스템 — 세럼 30ml + 스팟 코렉터 15ml).",
+          "스튜디오 스킨: 캡슐 형태의 집중 케어.",
+          "디바이스: 더마아키텍트. 메이크업: 파운데이션·립·아이 제품.",
+          "대표 가격(2026-11-25 공식몰): 스킨 뉴트리션 슬리핑 마스크 80ml 75,000원, 퍼밍 울트라 리프팅 크림 50g 131,000원 수준."
+        ],
+        "note_ko": "라인 이름과 구성은 개편이 잦다. 구매 전 공식몰에서 현재 판매 제품과 용량·가격을 확인해야 한다."
+      },
+      {
+        "heading_ko": "퍼스널케어 자매 브랜드",
+        "bullets_ko": [
+          "글리스터(Glister): 치약·구강청정제 등 구강케어. 회사는 '구강 청결과 건강'을 브랜드 설명으로 쓴다.",
+          "새티니크(Satinique): 샴푸·컨디셔너 등 헤어케어.",
+          "G&H: 바디워시·바디로션 등 바디케어.",
+          "이 브랜드들도 일반 유통 매장이 아니라 공식몰·ABC·ABO를 통해 판매된다."
+        ]
+      },
+      {
+        "heading_ko": "한국 규제: 화장품이 말할 수 있는 범위",
+        "bullets_ko": [
+          "화장품법상 '기능성화장품'(미백, 주름개선, 자외선차단, 모발 염색, 탈모 증상 완화, 여드름성 피부 보조 등)은 식약처 심사·보고를 거친 것만 표시·광고할 수 있다.",
+          "화장품은 질병의 진단·치료를 목적으로 할 수 없고, '치료', '재생', '항암', '면역' 같은 표현은 허용되지 않는다.",
+          "전성분, 사용기한 또는 개봉 후 사용기간, 책임판매업자, 제조번호가 표시돼야 한다. 라벨에 없는 효능을 말하는 판매자는 신뢰하지 않는 것이 맞다.",
+          "기능성 표시가 있어도 개인차가 크다. 임상 결과는 평균값이며 사용자 전원에게 같은 결과가 나오지 않는다."
+        ]
+      },
+      {
+        "heading_ko": "기대할 수 있는 것과 없는 것",
+        "bullets_ko": [
+          "기대할 수 있는 것: 세정, 보습, 자외선차단, 피부 장벽 유지, 색조 연출. 이 영역은 사용감과 전성분이 제품 선택의 핵심이다.",
+          "기능성 범위: 미백·주름개선 등은 인정받은 범위 안에서 완만한 변화. '한 달에 10년 젊어짐' 같은 결과는 없다.",
+          "기대할 수 없는 것: 질병 치료, 여드름·아토피의 치료, '피부 독소 배출', 세포 재생 촉진 같은 비과학적 주장.",
+          "고가 제품이 항상 더 좋은 것은 아니다. 같은 기능이면 전성분·농도·사용감·용량당 가격으로 비교해야 한다."
+        ]
+      },
+      {
+        "heading_ko": "구매 전 확인 사항",
+        "bullets_ko": [
+          "피부 타입과 민감도, 현재 사용 중인 제품(레티놀·산 성분과의 병용)을 먼저 정리한다.",
+          "새 제품은 팔 안쪽에 소량 발라 24~48시간 패치 테스트를 한다. 자극이 있으면 중단한다.",
+          "전성분에서 알레르기 유발 성분(향료, 특정 보존제, 에센셜 오일 등)을 확인한다.",
+          "용량당 가격으로 환산해 대안 브랜드와 비교한다. 매장 테스트가 어려우면 샘플·소용량으로 먼저 확인한다.",
+          "개봉 후 사용기간이 지난 제품은 쓰지 않는다."
+        ]
+      },
+      {
+        "heading_ko": "유통 구조",
+        "bullets_ko": [
+          "백화점·드러그스토어 같은 일반 유통에서는 판매하지 않는다. 가격은 정가에 가깝게 유지되어 상시 할인 제품과 체감 가격 차이가 날 수 있다.",
+          "대신 전국 14개 지역에 암웨이 비즈니스 & 브랜드 센터(ABC)와 A STATION이 있어 제품을 직접 보고 상담·체험할 수 있다.",
+          "제품 정보는 공식몰 상세페이지와 라벨이 기준이다. SNS 후기·판매자 설명은 참고자료일 뿐이다.",
+          "반품은 소비자 기준 제품 인도일로부터 20일 이내이며, 개봉·사용한 제품은 제한될 수 있다."
+        ]
+      }
+    ],
+    "questions_ko": [
+      "이 제품이 해결하려는 문제가 보습·차단 같은 기본 기능인가, 아니면 치료를 기대하는 것인가?",
+      "전성분과 기능성 표시를 직접 확인했는가?",
+      "용량당 가격이 대안보다 얼마나 높은가?",
+      "가까운 ABC·A STATION에서 직접 사용해 볼 수 있는가?"
+    ],
+    "checkpoints": [
+      { "label_ko": "아티스트리 브랜드·라인업", "url": "https://www.amway.co.kr/about-amway/artistry" },
+      { "label_ko": "아티스트리 테크놀로지(각주 포함)", "url": "https://www.amway.co.kr/about-amway/artistry/technology" },
+      { "label_ko": "식약처 기능성화장품 안내", "url": "https://www.mfds.go.kr" },
+      { "label_ko": "화장품법", "url": "https://www.law.go.kr" }
+    ]
+  }
+}

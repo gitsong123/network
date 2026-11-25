@@ -1,0 +1,31 @@
+[package]
+name = "amway-agent-mcp"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.70"
+authors = ["gitsong123"]
+description = "Amway (Korea) fact, monetization-structure and health/beauty knowledge server for AI agents, over the Model Context Protocol (stdio JSON-RPC 2.0). Zero dependencies, single binary."
+documentation = "https://github.com/gitsong123/network/blob/main/README.md"
+readme = "README.md"
+license = "MIT"
+keywords = ["mcp", "model-context-protocol", "amway", "agent", "knowledge-base"]
+categories = ["command-line-utilities"]
+
+[lib]
+name = "amway_agent_mcp"
+path = "src/lib.rs"
+
+[[bin]]
+name = "amway-agent-mcp"
+path = "src/main.rs"
+
+# No external crates on purpose: the whole JSON layer, MCP transport and CLI are
+# implemented with the standard library only, so `cargo build` works offline and
+# the release binary is a single static executable.
+[dependencies]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
