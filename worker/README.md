@@ -22,8 +22,8 @@
 ## 무엇을 하나
 
 - **MCP**: `initialize` · `tools/list` · `tools/call` · `ping` (+ `resources/list` · `prompts/list` · `logging/setLevel`)을
-  지원합니다. Rust MCP 서버(`src/tools.rs`)와 **같은 4개 도구**(`get_amway_facts`, `explain_monetization`,
-  `compare_concerns`, `get_join_guide`)에 **같은 Markdown·같은 구조화 데이터**를 돌려줍니다.
+  지원합니다. Rust MCP 서버(`src/tools.rs`)와 **같은 5개 도구**(`get_amway_facts`, `explain_monetization`,
+  `compare_concerns`, `plan_smart_shopping`, `get_join_guide`)에 **같은 Markdown·같은 구조화 데이터**를 돌려줍니다.
   세션을 만들지 않는(stateless) 방식이라 어느 콜드 스타트에서도 바로 호출됩니다.
 - **문서 서빙**: `llms.txt` · `SKILL.md` · `data/*.json`을 저장소 원문 그대로 내보냅니다.
 - **비공식 고지 유지**: 모든 도구 응답에 비공식·이해관계 고지, 후원자 번호 `7024721762`의 의미,
@@ -63,7 +63,7 @@ DASHBOARD_TOKEN=... npm run smoke   # 대시보드가 잠겨 있으면 토큰을
 
 테스트가 확인하는 것:
 
-- MCP 4개 도구 전 인자 조합의 Markdown·구조화 데이터가 **Rust 바이너리와 바이트 단위로 동일**한지
+- MCP 5개 도구 전 인자 조합(합리적 소비 플랜의 예산·카테고리 조합 포함)의 Markdown·구조화 데이터가 **Rust 바이너리와 바이트 단위로 동일**한지
   (`test/rust-parity.test.js` — Rust를 빌드하지 않았으면 그 부분만 건너뜀)
 - `initialize`/`tools/list`/`tools/call`/`ping`/알림(202)/배치/오류 코드
 - `/llms.txt`·`/SKILL.md`·`/data/*`가 저장소 원문과 **바이트 단위로 동일**한지
@@ -129,7 +129,7 @@ npm run deploy:pages
 ```
 src/index.js             라우터 (CORS, 캐시, 보안 헤더, 추적)
 src/mcp.js               JSON-RPC 2.0 / MCP Streamable HTTP (stateless)
-src/knowledge.js         도구 4종 — src/tools.rs 포팅 (Markdown 렌더링)
+src/knowledge.js         도구 5종 — src/tools.rs 포팅 (Markdown 렌더링)
 src/track.js             User-Agent 분류, KST 시각, KV 집계
 src/dashboard.js         대시보드·랜딩 HTML (프레임워크 없음, 인라인 CSS/JS)
 src/assets.generated.js  sync-data가 만드는 번들 (직접 수정 금지)

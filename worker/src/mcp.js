@@ -86,11 +86,36 @@ const ARG_FIELDS = {
   get_amway_facts: 'category',
   explain_monetization: 'goal_type',
   compare_concerns: 'topic',
+  plan_smart_shopping: 'tier',
   get_join_guide: 'member_type',
 };
 
-/** `category=health_nutrition` — the single enum argument that identifies the answer. */
+const enumLabel = (value) => value.trim().toLowerCase().replace(/[ -]/g, '_');
+
+/** `category=health_nutrition` — the argument that identifies the answer. */
 export function argumentLabel(tool, args) {
+  if (tool === 'plan_smart_shopping') {
+    const bag = args && typeof args === 'object' ? args : {};
+    const budget = bag.monthly_budget_krw;
+    if (typeof budget === 'number' && Number.isFinite(budget)) return `budget=${Math.round(budget)}`;
+    if (typeof budget === 'string' && budget.trim() !== '') return `budget=${budget.trim()}`;
+    const categories = bag.categories;
+    if (typeof categories === 'string' && categories.trim() !== '') {
+      return `categories=${categories
+        .split(',')
+        .filter((part) => part.trim() !== '')
+        .map(enumLabel)
+        .join('+')}`;
+    }
+    if (Array.isArray(categories) && categories.length > 0) {
+      return `categories=${categories
+        .filter((part) => typeof part === 'string' && part.trim() !== '')
+        .map(enumLabel)
+        .join('+')}`;
+    }
+    if (typeof bag.tier === 'string' && bag.tier.trim() !== '') return `tier=${enumLabel(bag.tier)}`;
+    return '';
+  }
   const field = ARG_FIELDS[tool];
   if (!field) return '';
   const value = args && typeof args === 'object' ? args[field] : undefined;

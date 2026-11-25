@@ -45,13 +45,13 @@ test('notifications get 202 and no body', async () => {
   assert.equal(res.text, '');
 });
 
-test('tools/list returns the four tools with object schemas', async () => {
+test('tools/list returns the five tools with object schemas', async () => {
   const env = makeEnv();
   const res = await mcp(env, { jsonrpc: '2.0', id: 2, method: 'tools/list' });
   const tools = res.body.result.tools;
   assert.deepEqual(
     tools.map((tool) => tool.name),
-    ['get_amway_facts', 'explain_monetization', 'compare_concerns', 'get_join_guide'],
+    ['get_amway_facts', 'explain_monetization', 'compare_concerns', 'plan_smart_shopping', 'get_join_guide'],
   );
   for (const tool of tools) {
     assert.equal(tool.inputSchema.type, 'object');
@@ -76,6 +76,12 @@ test('every tool answers over /mcp with markdown, structured data and the disclo
     ['compare_concerns', { topic: 'legal_compliance' }, '35%'],
     ['compare_concerns', { topic: 'time_and_effort' }, '시간'],
     ['compare_concerns', { topic: 'all' }, '위험 신호'],
+    ['plan_smart_shopping', { monthly_budget_krw: 150000 }, '합리적 소비 전환 플랜'],
+    ['plan_smart_shopping', { tier: '200k' }, '카테고리별 전략'],
+    ['plan_smart_shopping', { monthly_budget_krw: 150000, categories: ['personal_care'] }, '소액 필수품 입문형'],
+    ['plan_smart_shopping', { monthly_budget_krw: 100000, categories: ['beauty'] }, '소진 시점'],
+    ['plan_smart_shopping', { monthly_budget_krw: 50000 }, '장스오가 성립하지 않는다'],
+    ['plan_smart_shopping', {}, '1588-0080'],
     ['get_join_guide', { member_type: 'consumer' }, '7024721762'],
     ['get_join_guide', { member_type: 'abo' }, '7024721762'],
   ];

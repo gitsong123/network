@@ -139,7 +139,13 @@ async function handleMcp(request, env, ctx) {
       {
         ok: false,
         error: 'Use POST with a JSON-RPC 2.0 body (MCP Streamable HTTP).',
-        tools: ['get_amway_facts', 'explain_monetization', 'compare_concerns', 'get_join_guide'],
+        tools: [
+          'get_amway_facts',
+          'explain_monetization',
+          'compare_concerns',
+          'plan_smart_shopping',
+          'get_join_guide',
+        ],
       },
       405,
       { allow: 'POST, OPTIONS', ...CORS_HEADERS },

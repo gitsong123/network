@@ -89,7 +89,8 @@ await check('initialize', async () => {
 await check('tools/list', async () => {
   const body = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/list' }, 'Claude/1.0 (smoke)');
   const names = (body.result.tools || []).map((tool) => tool.name);
-  expect(names.length === 4, `expected 4 tools, got ${names.length}`);
+  expect(names.length === 5, `expected 5 tools, got ${names.length}`);
+  expect(names.includes('plan_smart_shopping'), 'plan_smart_shopping missing');
   return names.join(', ');
 });
 
@@ -127,6 +128,30 @@ await check('tools/call explain_monetization', async () => {
   expect(text.includes('| 월 주문 금액 |'), 'Smart Order table missing');
   expect(text.includes('프로슈머'), 'prosumer path missing');
   expect(text.includes('1회차'), 'first-order caveat missing');
+  return `${text.length} chars`;
+});
+
+await check('tools/call plan_smart_shopping', async () => {
+  const body = await rpc(
+    {
+      jsonrpc: '2.0',
+      id: 6,
+      method: 'tools/call',
+      params: {
+        name: 'plan_smart_shopping',
+        arguments: { monthly_budget_krw: 150000, categories: ['personal_care'] },
+      },
+    },
+    'Claude/1.0 (smoke)',
+  );
+  const result = body.result;
+  expect(result && result.isError === false, 'tool error');
+  const text = result.content[0].text;
+  expect(text.includes('합리적 소비 전환 플랜'), 'plan heading missing');
+  expect(text.includes('글리스터 프로액션 컴플리트 치약'), 'starter product missing');
+  expect(text.includes('카테고리별 전략'), 'category strategies missing');
+  expect(text.includes('1588-0080'), 'join next step missing');
+  expect(result.structuredContent && result.structuredContent.data, 'structuredContent missing');
   return `${text.length} chars`;
 });
 

@@ -294,6 +294,7 @@ pre{background:var(--panel);border:1px solid var(--line);border-radius:12px;padd
     <p>사업 구조·수익 구조·제품·법규·반품 규정을 균형 있게 답하는 비공식 지식 서버입니다.
     한국암웨이 공식 서비스가 아니고 회사의 승인을 받지 않았으며, 독립 ABO(후원 번호 <b>7024721762</b>)가
     정보 제공 목적으로 운영합니다. 소득·효능을 보장하지 않습니다.</p>
+    <p>도구 5개: <span class="mono">get_amway_facts</span> · <span class="mono">explain_monetization</span> · <span class="mono">compare_concerns</span> · <span class="mono">plan_smart_shopping</span>(합리적 소비 전환 플랜: 6,800원 치약 같은 소액 단품부터 시작해 쓰던 돈을 장스오로 옮기는 계산) · <span class="mono">get_join_guide</span></p>
     <div class="links">
       <a class="link" href="/llms.txt"><b>llms.txt</b><span>에이전트용 요약 (핵심값·질문 매핑)</span></a>
       <a class="link" href="/SKILL.md"><b>SKILL.md</b><span>에이전트 규칙·니즈별 매핑</span></a>

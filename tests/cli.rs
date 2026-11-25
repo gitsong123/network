@@ -101,6 +101,7 @@ fn tools_and_version_are_available() {
         "get_amway_facts",
         "explain_monetization",
         "compare_concerns",
+        "plan_smart_shopping",
         "get_join_guide",
     ] {
         assert!(stdout.contains(name));

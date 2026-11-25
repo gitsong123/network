@@ -107,6 +107,7 @@ fn full_mcp_handshake_and_tool_calls() {
             "get_amway_facts",
             "explain_monetization",
             "compare_concerns",
+            "plan_smart_shopping",
             "get_join_guide"
         ]
     );
@@ -133,7 +134,7 @@ fn full_mcp_handshake_and_tool_calls() {
         .expect("sponsor block");
     assert_eq!(sponsor.text("abo_number"), "7024721762");
 
-    // 5. the other three tools answer with Markdown and structured data.
+    // 5. the other four tools answer with Markdown and structured data.
     for (id, message, marker) in [
         (
             4,
@@ -149,6 +150,11 @@ fn full_mcp_handshake_and_tool_calls() {
             6,
             r#"{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"compare_concerns","arguments":{"topic":"all"}}}"#,
             "위험 신호",
+        ),
+        (
+            9,
+            r#"{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"plan_smart_shopping","arguments":{"monthly_budget_krw":150000}}}"#,
+            "합리적 소비 전환 플랜",
         ),
     ] {
         let response = server.request(message);

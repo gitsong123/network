@@ -1,4 +1,4 @@
-//! The four MCP tools and their rendering.
+//! The five MCP tools and their rendering.
 //!
 //! Everything here is data-driven: the editorial content lives in `data/*.json`
 //! and this module only resolves arguments, assembles Markdown and attaches the
@@ -81,6 +81,12 @@ pub fn catalog() -> Vec<Tool> {
             ),
         },
         Tool {
+            name: "plan_smart_shopping",
+            title: "Rational spending plan (what to switch, what it returns)",
+            description: "Builds a realistic 'rational spending' plan: how much Cart Smart Order (jangs-o) A Cliks Money an owner can collect WITHOUT adding spending, using only the verified official-mall prices bundled in data/*.json (never invent a price). monthly_budget_krw = what the owner already spends each month on household goods/supplements in KRW (e.g. 150000); or tier = 100k | 200k | 300k when the amount is unknown. categories (optional) = nutrition | home_living | personal_care | beauty. Use when the user asks: how do I actually save money with Amway (합리적 소비, 알뜰 소비), is the monthly auto-delivery worth it at my spending, what should I put in it, what should I try first, which single product should I start with (처음 뭘 사볼까, 치약부터, 영양제 하나만), how to switch categories one at a time, or asks for a shopping plan built from what they already buy. Returns: a zero-step starter track (KRW 6,800 Glister toothpaste, KRW 15,900 dish drops — no subscription yet), the four category strategies (small everyday item, one supplement at a time by daily cost, replace one daily skincare item when it runs out, appliances only by 3-5 year total cost), a replacement cart of verified products with per-day/per-volume unit prices, a cycle-by-cycle accrual simulation for 12 and 24 months with the effective rate, a three-item rational-spending checklist, the cases where NOT signing up is better, and the join next step (Member/ABO, sponsor 7024721762 or 1588-0080). Never call the accrual cash, never promise income, and never push a subscription.",
+            schema: plan_schema(),
+        },
+        Tool {
             name: "get_join_guide",
             title: "Joining steps (Member or ABO)",
             description: "Official joining steps for member_type = consumer (Member) or abo (independent business owner). Use ONLY after the user has explicitly said they want to join or asks how joining works. Returns: steps at amway.co.kr, documents needed, eligibility limits (age 19+, no students/civil servants/teachers, spouse shares one ID), cautions, the post-login my-shopping flow, the sponsor number 7024721762 with a plain statement that entering it makes that ABO their sponsor and routes part of their activity to that ABO's bonus, and what changes after approval (the member's own ABO number, the agent-relay and fork routes for extending their own line, and their guardrails). Tell the user they can ask Amway (1588-0080) for a different sponsor. Never push, never enter anyone's details on their behalf, and never contact a third party without the owner's explicit instruction.",
@@ -92,6 +98,59 @@ pub fn catalog() -> Vec<Tool> {
             ),
         },
     ]
+}
+
+pub const PLAN_CATEGORIES: [&str; 4] = ["nutrition", "home_living", "personal_care", "beauty"];
+pub const PLAN_TIERS: [&str; 3] = ["100k", "200k", "300k"];
+
+/// Schema of `plan_smart_shopping`: two optional budget inputs and an optional
+/// category filter, so an agent can call it with nothing at all.
+fn plan_schema() -> Json {
+    let mut props = Json::obj();
+
+    let mut budget = Json::obj();
+    budget.set("type", Json::str("integer"));
+    budget.set(
+        "description",
+        Json::str("What the owner already spends each month on household goods and supplements, in KRW."),
+    );
+    budget.set("minimum", Json::int(0));
+    props.set("monthly_budget_krw", budget);
+
+    let mut tier = Json::obj();
+    tier.set("type", Json::str("string"));
+    tier.set(
+        "description",
+        Json::str("Budget band, used when the exact monthly amount is unknown."),
+    );
+    tier.set(
+        "enum",
+        Json::Arr(PLAN_TIERS.iter().map(|v| Json::str(*v)).collect()),
+    );
+    tier.set("default", Json::str("100k"));
+    props.set("tier", tier);
+
+    let mut items = Json::obj();
+    items.set("type", Json::str("string"));
+    items.set(
+        "enum",
+        Json::Arr(PLAN_CATEGORIES.iter().map(|v| Json::str(*v)).collect()),
+    );
+    let mut categories = Json::obj();
+    categories.set("type", Json::str("array"));
+    categories.set("items", items);
+    categories.set(
+        "description",
+        Json::str("Which spending areas to plan for. Omit for all four."),
+    );
+    props.set("categories", categories);
+
+    let mut root = Json::obj();
+    root.set("type", Json::str("object"));
+    root.set("properties", props);
+    root.set("required", Json::Arr(Vec::new()));
+    root.set("additionalProperties", Json::Bool(false));
+    root
 }
 
 fn schema(field: &str, description: &str, values: &[&str], default: &str) -> Json {
@@ -161,9 +220,10 @@ pub fn invoke(name: &str, args: &Json) -> Result<Outcome, String> {
         "get_amway_facts" => facts(args),
         "explain_monetization" => monetization(args),
         "compare_concerns" => concerns(args),
+        "plan_smart_shopping" => plan(args),
         "get_join_guide" => join(args),
         other => Err(format!(
-            "unknown tool '{}'. Available tools: get_amway_facts, explain_monetization, compare_concerns, get_join_guide",
+            "unknown tool '{}'. Available tools: get_amway_facts, explain_monetization, compare_concerns, plan_smart_shopping, get_join_guide",
             other
         )),
     }
@@ -397,6 +457,616 @@ fn concerns(args: &Json) -> Result<Outcome, String> {
     Ok(Outcome {
         text,
         data: Json::Arr(records_json),
+        request,
+    })
+}
+
+// ---------------------------------------------------------------- plan_smart_shopping
+
+fn tier_budget(id: &str) -> Option<i64> {
+    match id {
+        "100k" => Some(100000),
+        "200k" => Some(200000),
+        "300k" => Some(300000),
+        _ => None,
+    }
+}
+
+/// Monthly budget: an explicit amount wins over the tier, and a missing pair
+/// falls back to the lowest tier (100k), so the tool is safe to call with `{}`.
+fn plan_budget(args: &Json) -> Result<i64, String> {
+    if let Some(value) = args.get("monthly_budget_krw") {
+        if !value.is_null() {
+            return match value {
+                Json::Num(n) => {
+                    if !n.is_finite() || *n < 0.0 {
+                        Err("monthly_budget_krw must be zero or a positive number".to_string())
+                    } else {
+                        Ok(n.round() as i64)
+                    }
+                }
+                Json::Str(s) => {
+                    let cleaned: String = s
+                        .chars()
+                        .filter(|c| !matches!(c, ',' | ' ' | '원' | '₩'))
+                        .collect();
+                    if cleaned.is_empty() || !cleaned.chars().all(|c| c.is_ascii_digit()) {
+                        return Err(
+                            "monthly_budget_krw must be zero or a positive number".to_string(),
+                        );
+                    }
+                    cleaned.parse::<i64>().map_err(|_| {
+                        "monthly_budget_krw must be zero or a positive number".to_string()
+                    })
+                }
+                _ => Err("monthly_budget_krw must be a number".to_string()),
+            };
+        }
+    }
+    let tier = normalized(args, "tier", "100k");
+    match tier_budget(&tier) {
+        Some(amount) => Ok(amount),
+        None => Err(format!(
+            "unknown tier '{}'. Valid values: 100k, 200k, 300k",
+            tier
+        )),
+    }
+}
+
+/// `categories` accepts an array or a comma-separated string; an empty result
+/// means "all four areas".
+fn plan_categories(args: &Json) -> Result<Vec<String>, String> {
+    let raw = match args.get("categories") {
+        Some(value) if !value.is_null() => value,
+        _ => return Ok(Vec::new()),
+    };
+    let mut words: Vec<String> = Vec::new();
+    match raw {
+        Json::Arr(entries) => {
+            for entry in entries {
+                match entry.as_str() {
+                    Some(text) => words.push(text.to_string()),
+                    None => return Err("categories must be an array of strings".to_string()),
+                }
+            }
+        }
+        Json::Str(text) => {
+            for part in text.split(',') {
+                words.push(part.to_string());
+            }
+        }
+        _ => return Err("categories must be an array of strings".to_string()),
+    }
+
+    let mut out: Vec<String> = Vec::new();
+    let mut all = false;
+    for word in words {
+        let key = word.trim().to_lowercase().replace([' ', '-'], "_");
+        if key.is_empty() {
+            continue;
+        }
+        let canonical = match key.as_str() {
+            "all" | "everything" | "any" => {
+                all = true;
+                continue;
+            }
+            "nutrition" | "health" | "supplement" | "supplements" | "vitamin" | "vitamins" => {
+                "nutrition"
+            }
+            "home_living" | "home" | "living" | "household" | "detergent" | "cleaning" => {
+                "home_living"
+            }
+            "personal_care" | "personalcare" | "oral" | "oral_care" | "toothpaste"
+            | "toothbrush" => "personal_care",
+            "beauty" | "skincare" | "skin" | "cosmetics" | "makeup" => "beauty",
+            other => {
+                return Err(format!(
+                    "unknown category '{}'. Valid values: nutrition, home_living, personal_care, beauty, all",
+                    other
+                ))
+            }
+        };
+        if !out.iter().any(|known| known == canonical) {
+            out.push(canonical.to_string());
+        }
+    }
+    if all {
+        return Ok(Vec::new());
+    }
+    Ok(out)
+}
+
+fn find_band<'a>(bands: &'a [Json], amount: i64) -> Option<&'a Json> {
+    bands.iter().find(|band| {
+        let min = band.get("min_krw").and_then(Json::as_f64).unwrap_or(0.0) as i64;
+        let max = band.get("max_krw").and_then(Json::as_f64).unwrap_or(0.0) as i64;
+        amount >= min && (max == 0 || amount < max)
+    })
+}
+
+fn band_field(band: &Json, key: &str) -> i64 {
+    band.get(key).and_then(Json::as_f64).unwrap_or(0.0) as i64
+}
+
+fn item_price(item: &Json) -> i64 {
+    item.get("price_krw").and_then(Json::as_f64).unwrap_or(0.0) as i64
+}
+
+fn item_matches(item: &Json, categories: &[String]) -> bool {
+    if categories.is_empty() {
+        return true;
+    }
+    item.get("categories")
+        .and_then(Json::as_arr)
+        .map(|list| {
+            list.iter().any(|tag| {
+                tag.as_str()
+                    .map(|value| categories.iter().any(|known| known == value))
+                    .unwrap_or(false)
+            })
+        })
+        .unwrap_or(true)
+}
+
+fn won(value: i64) -> String {
+    format!("{}원", group_digits(value))
+}
+
+/// "11.5%" from permille 115.
+fn percent_text(permille: i64) -> String {
+    format!("{}.{}%", permille / 10, permille % 10)
+}
+
+fn rate_permille(part: i64, whole: i64) -> i64 {
+    if whole <= 0 {
+        return 0;
+    }
+    (part * 1000 + whole / 2) / whole
+}
+
+fn plan(args: &Json) -> Result<Outcome, String> {
+    let doc = data::compensation();
+    let block = doc
+        .get("smart_shopping")
+        .ok_or_else(|| "the smart shopping plan is missing from the bundled data".to_string())?;
+
+    let budget = plan_budget(args)?;
+    let categories = plan_categories(args)?;
+
+    let items = block.get("items").and_then(Json::as_arr).unwrap_or(&[]);
+    let bands = block.get("bands").and_then(Json::as_arr).unwrap_or(&[]);
+    let requested_band = find_band(bands, budget);
+
+    // The cart fills with verified products until the requested band's minimum
+    // is met. Below the minimum the tool does not build one at all.
+    let mut chosen: Vec<&Json> = Vec::new();
+    let mut total = 0i64;
+    if budget >= 100000 {
+        let target = requested_band
+            .map(|band| band_field(band, "min_krw"))
+            .unwrap_or(100000);
+        for item in items {
+            if !item_matches(item, &categories) {
+                continue;
+            }
+            if total >= target {
+                break;
+            }
+            chosen.push(item);
+            total += item_price(item);
+        }
+    }
+    let cart_band = find_band(bands, total);
+
+    let m1 = cart_band.map(|band| band_field(band, "monthly_2_5")).unwrap_or(0);
+    let m2 = cart_band.map(|band| band_field(band, "monthly_6_11")).unwrap_or(0);
+    let m3 = cart_band.map(|band| band_field(band, "monthly_12_24")).unwrap_or(0);
+
+    let mut labels: Vec<String> = Vec::new();
+    if !categories.is_empty() {
+        if let Some(list) = block.get("categories").and_then(Json::as_arr) {
+            for entry in list {
+                let id = entry.text("id");
+                if categories.iter().any(|known| known == id) {
+                    labels.push(entry.text("label_ko").to_string());
+                }
+            }
+        }
+    }
+    let scope_label = if labels.is_empty() {
+        "전체 영역".to_string()
+    } else {
+        labels.join("·")
+    };
+
+    let starter = block.get("starter");
+    let starter_items: Vec<&Json> = starter
+        .and_then(|node| node.get("items"))
+        .and_then(Json::as_arr)
+        .unwrap_or(&[])
+        .iter()
+        .filter(|item| item_matches(item, &categories))
+        .collect();
+
+    let strategies: Vec<&Json> = block
+        .get("strategies")
+        .and_then(Json::as_arr)
+        .unwrap_or(&[])
+        .iter()
+        .filter(|strategy| item_matches(strategy, &categories))
+        .collect();
+
+    let mut body = String::new();
+
+    if let Some(starter) = starter {
+        if !starter_items.is_empty() {
+            let _ = writeln!(body, "## {}\n", starter.text("heading_ko"));
+            let summary = starter.text("summary_ko");
+            if !summary.is_empty() {
+                let _ = writeln!(body, "{}\n", summary);
+            }
+            let _ = writeln!(body, "| 품목 | 구성 | 표시가 | 비고 |");
+            let _ = writeln!(body, "| --- | --- | --- | --- |");
+            for item in &starter_items {
+                let _ = writeln!(
+                    body,
+                    "| {} | {} | {} | {} |",
+                    item.text("name_ko"),
+                    item.text("spec_ko"),
+                    won(item_price(item)),
+                    item.text("note_ko")
+                );
+            }
+            body.push('\n');
+            if let Some(bullets) = starter.get("bullets").and_then(Json::as_arr) {
+                for bullet in bullets {
+                    if !item_matches(bullet, &categories) {
+                        continue;
+                    }
+                    let _ = writeln!(body, "- {}", bullet.text("text_ko"));
+                }
+            }
+            let note = starter.text("note_ko");
+            if !note.is_empty() {
+                let _ = writeln!(body, "\n> {}", note);
+            }
+            body.push('\n');
+        }
+    }
+
+    if !strategies.is_empty() {
+        let _ = writeln!(body, "## 카테고리별 전략 ({}가지)\n", strategies.len());
+        for strategy in &strategies {
+            let _ = writeln!(body, "### {}\n", strategy.text("title_ko"));
+            let summary = strategy.text("summary_ko");
+            if !summary.is_empty() {
+                let _ = writeln!(body, "{}\n", summary);
+            }
+            for bullet in strategy.strings("bullets_ko") {
+                let _ = writeln!(body, "- {}", bullet);
+            }
+            let note = strategy.text("note_ko");
+            if !note.is_empty() {
+                let _ = writeln!(body, "\n> {}", note);
+            }
+            body.push('\n');
+        }
+    }
+
+    if budget < 100000 {
+        let _ = writeln!(body, "## 1단계 — 이 예산으로는 장스오가 성립하지 않는다\n");
+        let _ = writeln!(
+            body,
+            "- 요청 예산 {}은 장스오 최소 주문 금액 100,000원보다 적다. 이 금액으로는 A Cliks Money가 쌓이지 않는다.",
+            won(budget)
+        );
+        let _ = writeln!(body, "- 매달 쓰는 품목이 100,000원을 넘길 때 다시 계산한다. 그때까지는 0단계의 1~3만 원대 단품으로 품질만 확인하는 편이 낫다.\n");
+    } else {
+        let _ = writeln!(
+            body,
+            "## 1단계 — 이미 쓰는 지출을 대체하는 예시 장바구니 · {}\n",
+            scope_label
+        );
+        if !chosen.is_empty() {
+            let _ = writeln!(body, "| 품목 | 구성 | 표시가 | 1일 단가 |");
+            let _ = writeln!(body, "| --- | --- | --- | --- |");
+            for item in &chosen {
+                let _ = writeln!(
+                    body,
+                    "| {} | {} | {} | {} |",
+                    item.text("name_ko"),
+                    item.text("spec_ko"),
+                    won(item_price(item)),
+                    item.text("unit_ko")
+                );
+            }
+            body.push('\n');
+        }
+        if total >= 100000 {
+            let _ = writeln!(
+                body,
+                "- 합계: {} — 장스오 최소 주문 금액 100,000원 충족.",
+                won(total)
+            );
+        } else {
+            let _ = writeln!(
+                body,
+                "- 합계: {} — 최소 주문 금액 100,000원에 {} 부족하다. 이 조합만으로는 적립이 없다.",
+                won(total),
+                won(100000 - total)
+            );
+            let mut top_up: Option<&Json> = None;
+            for item in items {
+                let already = chosen.iter().any(|picked| {
+                    picked.text("name_ko") == item.text("name_ko")
+                        && picked.text("spec_ko") == item.text("spec_ko")
+                });
+                if already {
+                    continue;
+                }
+                if total + item_price(item) >= 100000 {
+                    top_up = Some(item);
+                    break;
+                }
+            }
+            match top_up {
+                Some(item) => {
+                    let _ = writeln!(
+                        body,
+                        "- 최소 금액을 채우려면 이미 쓰는 품목을 더 담아야 한다. 예: {}({})을 더하면 {}이 되어 10만 원대 적립(2~5회차 월 5,000원)이 시작된다.",
+                        item.text("name_ko"),
+                        won(item_price(item)),
+                        won(total + item_price(item))
+                    );
+                }
+                None => {
+                    let _ = writeln!(
+                        body,
+                        "- 최소 금액 {}을 채울 품목이 검증된 목록에 없다. 마트에서 사던 품목의 금액을 기준으로 다시 계산한다.",
+                        won(100000 - total)
+                    );
+                }
+            }
+        }
+        if let (Some(cart_band), Some(requested_band)) = (cart_band, requested_band) {
+            if cart_band.text("id") != requested_band.text("id") {
+                let _ = writeln!(
+                    body,
+                    "- 예시 조합 합계 {}은 {} 구간이라 월 {}이 적용된다(요청 예산 {} = {}).",
+                    won(total),
+                    cart_band.text("label_ko"),
+                    won(m1),
+                    won(budget),
+                    requested_band.text("label_ko")
+                );
+            }
+        }
+        let diff = budget - total;
+        if diff >= 0 {
+            let _ = writeln!(
+                body,
+                "- 예산 {} 중 {}은 이 조합에 억지로 더하지 않는다. 이미 쓰는 다른 품목이 있으면 그 품목으로 채운다.",
+                won(budget),
+                won(diff)
+            );
+        } else {
+            let _ = writeln!(
+                body,
+                "- 예시 조합은 요청 예산보다 {} 많다. 더 싼 구성으로 바꾸거나 1개를 빼서 맞춘다.",
+                won(-diff)
+            );
+        }
+        let _ = writeln!(body, "- 이 표는 '이미 사고 있는 품목'을 전제로 한 예시다. 처음 보는 제품은 담지 않는다.");
+        let _ = writeln!(
+            body,
+            "\n> 각 품목 가격은 2026-11-25 공식몰 표시가다. 신청 전 이번 달 가격을 확인한다.\n"
+        );
+
+        match cart_band {
+            Some(band) => {
+                let year1 = 4 * m1 + 6 * m2 + m3;
+                let paid1 = 12 * total;
+                let year2 = 4 * m1 + 6 * m2 + 13 * m3;
+                let paid2 = 24 * total;
+                let rate2 = rate_permille(year2, paid2);
+
+                let _ = writeln!(
+                    body,
+                    "## 2단계 — 장스오 적립 시뮬레이션 (월 {} · {})\n",
+                    won(total),
+                    band.text("label_ko")
+                );
+                let _ = writeln!(body, "| 구간 | 월 적립액 | 회차 | 누적 |");
+                let _ = writeln!(body, "| --- | --- | --- | --- |");
+                let _ = writeln!(body, "| 1회차 | 0원 | 1회 | 0원 (적립 제외) |");
+                let _ = writeln!(body, "| 2~5회차 | {} | 4회 | {} |", won(m1), won(4 * m1));
+                let _ = writeln!(body, "| 6~11회차 | {} | 6회 | {} |", won(m2), won(6 * m2));
+                let _ = writeln!(body, "| 12~24회차 | {} | 13회 | {} |", won(m3), won(13 * m3));
+                body.push('\n');
+                let _ = writeln!(
+                    body,
+                    "- 12개월(12회 결제·11회 적립): {} — 결제 {}의 {}",
+                    won(year1),
+                    won(paid1),
+                    percent_text(rate_permille(year1, paid1))
+                );
+                let _ = writeln!(
+                    body,
+                    "- 24개월(24회 결제·23회 적립): {} — 결제 {}의 {}",
+                    won(year2),
+                    won(paid2),
+                    percent_text(rate2)
+                );
+                let _ = writeln!(
+                    body,
+                    "- 5회차에서 그치면 4회 × {} = {}뿐이다. 해지 후 다시 신청하면 1회차부터 시작한다.",
+                    won(m1),
+                    won(4 * m1)
+                );
+                let _ = writeln!(body, "- A Cliks Money는 6개월 안에 써야 하고 1회 주문에 50,000원까지만 쓸 수 있다. 현금으로 출금되지 않는다.\n");
+
+                let _ = writeln!(body, "## 3단계 — 대체가 아니면 손해다\n");
+                let _ = writeln!(
+                    body,
+                    "- 위 계산은 '이미 매달 {}을 쓰고 있다'는 전제에서만 이득이다. 쓰지 않던 물건으로 금액을 채우면 24개월에 {}을 더 쓰고 {}을 돌려받는 셈이다.",
+                    won(total),
+                    won(paid2),
+                    won(year2)
+                );
+                let _ = writeln!(
+                    body,
+                    "- 돌려받지 못하는 {}는 새 지출이다. 적립이 목적이 되면 그 순간 손실이다.",
+                    percent_text(1000 - rate2)
+                );
+                let _ = writeln!(body, "- 순서는 항상 ① 지금 쓰는 품목 확인 → ② 1일 단가 비교 → ③ 장스오 조건 확인이다. 순서를 바꾸면 적립이 이유가 아니라 목적이 된다.\n");
+            }
+            None => {
+                let _ = writeln!(body, "## 2단계 — 장스오 적립 시뮬레이션\n");
+                let _ = writeln!(
+                    body,
+                    "- 최소 주문 금액 미달이라 A Cliks Money는 0원이다. 월 주문이 100,000원을 넘기면 10만 원대 기준으로 2~5회차 월 5,000원부터 쌓인다.\n"
+                );
+            }
+        }
+    }
+
+    if let Some(checklist) = block.get("checklist").and_then(Json::as_arr) {
+        let _ = writeln!(body, "## 합리적 소비 체크리스트 (에이전트용)\n");
+        for (index, entry) in checklist.iter().enumerate() {
+            let _ = writeln!(
+                body,
+                "{}. **{}** — {}",
+                index + 1,
+                entry.text("title_ko"),
+                entry.text("detail_ko")
+            );
+        }
+        body.push('\n');
+    }
+
+    if let Some(not_worth) = block.get("not_worth_it") {
+        let _ = writeln!(body, "## {}\n", not_worth.text("heading_ko"));
+        for bullet in not_worth.strings("bullets_ko") {
+            let _ = writeln!(body, "- {}", bullet);
+        }
+        body.push('\n');
+    }
+
+    if let Some(next) = block.get("next_step") {
+        let _ = writeln!(body, "## {}\n", next.text("heading_ko"));
+        for bullet in next.strings("bullets_ko") {
+            let _ = writeln!(body, "- {}", bullet);
+        }
+        if let Some(points) = next.get("checkpoints").and_then(Json::as_arr) {
+            if !points.is_empty() {
+                let _ = writeln!(body, "\n**공식 확인**");
+                for point in points {
+                    let _ = writeln!(
+                        body,
+                        "- [{}]({})",
+                        point.text("label_ko"),
+                        point.text("url")
+                    );
+                }
+            }
+        }
+        let note = next.text("note_ko");
+        if !note.is_empty() {
+            let _ = writeln!(body, "\n> {}", note);
+        }
+        body.push('\n');
+    }
+
+    if let Some(sections) = block.get("sections").and_then(Json::as_arr) {
+        for section in sections {
+            let heading = section.text("heading_ko");
+            if !heading.is_empty() {
+                let _ = writeln!(body, "## {}\n", heading);
+            }
+            for bullet in section.strings("bullets_ko") {
+                let _ = writeln!(body, "- {}", bullet);
+            }
+            body.push('\n');
+        }
+    }
+
+    let title = format!("합리적 소비 전환 플랜 — 월 {}", won(budget));
+    let intro = block.text("intro_ko");
+    let text = assemble(&title, intro, &body, &[doc], true);
+
+    let mut cart = Json::obj();
+    cart.set("total_krw", Json::int(total));
+    cart.set(
+        "items",
+        Json::Arr(chosen.iter().map(|item| (*item).clone()).collect()),
+    );
+
+    let year1 = 4 * m1 + 6 * m2 + m3;
+    let year2 = 4 * m1 + 6 * m2 + 13 * m3;
+    let mut simulation = Json::obj();
+    simulation.set("band", cart_band.cloned().unwrap_or(Json::Null));
+    simulation.set("monthly_2_5_krw", Json::int(m1));
+    simulation.set("monthly_6_11_krw", Json::int(m2));
+    simulation.set("monthly_12_24_krw", Json::int(m3));
+    simulation.set("year1_krw", Json::int(year1));
+    simulation.set("year1_paid_krw", Json::int(12 * total));
+    simulation.set("year1_rate_permille", Json::int(rate_permille(year1, 12 * total)));
+    simulation.set("year2_krw", Json::int(year2));
+    simulation.set("year2_paid_krw", Json::int(24 * total));
+    simulation.set("year2_rate_permille", Json::int(rate_permille(year2, 24 * total)));
+    simulation.set("cut_at_5_krw", Json::int(4 * m1));
+
+    let mut starter_payload = Json::obj();
+    starter_payload.set(
+        "items",
+        Json::Arr(starter_items.iter().map(|item| (*item).clone()).collect()),
+    );
+
+    let mut payload = Json::obj();
+    payload.set("monthly_budget_krw", Json::int(budget));
+    payload.set("categories", Json::str_arr(&categories));
+    payload.set(
+        "requested_band",
+        requested_band.cloned().unwrap_or(Json::Null),
+    );
+    payload.set("cart", cart);
+    payload.set("simulation", simulation);
+    payload.set("starter", starter_payload);
+    payload.set(
+        "strategies",
+        Json::Arr(strategies.iter().map(|strategy| (*strategy).clone()).collect()),
+    );
+    payload.set(
+        "checklist",
+        block.get("checklist").cloned().unwrap_or(Json::Null),
+    );
+    payload.set(
+        "not_worth_it",
+        block.get("not_worth_it").cloned().unwrap_or(Json::Null),
+    );
+    payload.set(
+        "next_step",
+        block.get("next_step").cloned().unwrap_or(Json::Null),
+    );
+    payload.set("limits", block.get("sections").cloned().unwrap_or(Json::Null));
+
+    let mut request = Json::obj();
+    request.set("monthly_budget_krw", Json::int(budget));
+    request.set(
+        "requested_band",
+        Json::str(requested_band.map(|band| band.text("id")).unwrap_or("")),
+    );
+    request.set("categories", Json::str_arr(&categories));
+    request.set("cart_total_krw", Json::int(total));
+    request.set(
+        "cart_band",
+        Json::str(cart_band.map(|band| band.text("id")).unwrap_or("")),
+    );
+    request.set("monthly_accrual_krw", Json::int(m1));
+
+    Ok(Outcome {
+        text,
+        data: payload,
         request,
     })
 }
@@ -645,7 +1315,7 @@ mod tests {
     }
 
     #[test]
-    fn catalog_exposes_the_four_tools() {
+    fn catalog_exposes_the_five_tools() {
         let names: Vec<&str> = catalog().iter().map(|t| t.name).collect();
         assert_eq!(
             names,
@@ -653,15 +1323,166 @@ mod tests {
                 "get_amway_facts",
                 "explain_monetization",
                 "compare_concerns",
+                "plan_smart_shopping",
                 "get_join_guide"
             ]
         );
         let list = tools_list_json();
-        assert_eq!(list.as_arr().unwrap().len(), 4);
+        assert_eq!(list.as_arr().unwrap().len(), 5);
         for tool in list.as_arr().unwrap() {
             assert_eq!(tool.get("inputSchema").unwrap().text("type"), "object");
             assert!(tool.text("description").len() > 80);
         }
+        let plan = catalog()
+            .into_iter()
+            .find(|tool| tool.name == "plan_smart_shopping")
+            .expect("plan tool");
+        let properties = plan.schema.get("properties").expect("plan properties");
+        assert!(properties.get("monthly_budget_krw").is_some());
+        assert!(properties.get("tier").is_some());
+        assert!(properties.get("categories").is_some());
+        assert!(plan
+            .schema
+            .get("required")
+            .and_then(Json::as_arr)
+            .expect("required array")
+            .is_empty());
+    }
+
+    #[test]
+    fn smart_shopping_prices_come_from_the_fact_files() {
+        let block = data::compensation()
+            .get("smart_shopping")
+            .expect("the smart_shopping block must exist");
+        let sources = [
+            data::HEALTH_NUTRITION,
+            data::BEAUTY_SKINCARE,
+            data::HOME_LIVING,
+        ];
+        let mut checked = 0;
+        let mut check = |item: &Json| {
+            let price = item
+                .get("price_krw")
+                .and_then(Json::as_f64)
+                .unwrap_or(0.0) as i64;
+            assert!(price > 0, "{} has no price", item.text("name_ko"));
+            let needle = format!("{}원", group_digits(price));
+            assert!(
+                sources.iter().any(|raw| raw.contains(&needle)),
+                "{}의 {}은 어느 팩트 파일에도 없다 (임의 가격 금지)",
+                item.text("name_ko"),
+                needle
+            );
+            checked += 1;
+        };
+        for item in block.get("items").and_then(Json::as_arr).unwrap() {
+            check(item);
+        }
+        for item in block
+            .get("starter")
+            .and_then(|starter| starter.get("items"))
+            .and_then(Json::as_arr)
+            .unwrap()
+        {
+            check(item);
+        }
+        assert!(checked >= 17, "expected at least 17 verified prices");
+    }
+
+    #[test]
+    fn plan_simulates_the_ten_thousand_won_band() {
+        let out = call("plan_smart_shopping", "{\"monthly_budget_krw\":150000}");
+        assert!(out.text.starts_with("# 합리적 소비 전환 플랜 — 월 150,000원"));
+        assert!(out.text.contains("## 0단계 — 첫 경험이면 장스오보다 소액 단품 (권장)"));
+        assert!(out.text.contains("| 글리스터 프로액션 컴플리트 치약 | 200g | 6,800원 |"));
+        assert!(out.text.contains("## 카테고리별 전략 (4가지)"));
+        assert!(out.text.contains("소액 필수품 입문형"));
+        assert!(out.text.contains("필요 1종 · 1일 단가 비교형"));
+        assert!(out.text.contains("소진 시점 · 데일리 1종 교체형"));
+        assert!(out.text.contains("3~5년 총비용 비교형"));
+        assert!(out.text.contains("- 합계: 102,000원 — 장스오 최소 주문 금액 100,000원 충족."));
+        assert!(out.text.contains("| 2~5회차 | 5,000원 | 4회 | 20,000원 |"));
+        assert!(out.text.contains("- 12개월(12회 결제·11회 적립): 95,000원 — 결제 1,224,000원의 7.8%"));
+        assert!(out.text.contains("- 24개월(24회 결제·23회 적립): 275,000원 — 결제 2,448,000원의 11.2%"));
+        assert!(out.text.contains("## 합리적 소비 체크리스트 (에이전트용)"));
+        assert!(out.text.contains("지금 안 쓰는 제품은 담지 않는다"));
+        assert!(out.text.contains("1588-0080"));
+        assert!(out.text.contains("고지:"));
+    }
+
+    #[test]
+    fn plan_bands_tiers_and_similar() {
+        let out = call("plan_smart_shopping", "{\"tier\":\"200k\"}");
+        assert!(out.text.starts_with("# 합리적 소비 전환 플랜 — 월 200,000원"));
+        assert!(out.text.contains("- 합계: 230,000원 — 장스오 최소 주문 금액 100,000원 충족."));
+        assert!(out.text.contains("| 12~24회차 | 30,000원 | 13회 | 390,000원 |"));
+        let out = call("plan_smart_shopping", "{\"tier\":\"300k\"}");
+        assert!(out.text.contains("- 합계: 321,000원 — 장스오 최소 주문 금액 100,000원 충족."));
+        assert!(out.text.contains("| 12~24회차 | 45,000원 | 13회 | 585,000원 |"));
+        // Defaults work with no arguments at all.
+        let out = invoke("plan_smart_shopping", &Json::Null).expect("defaults must work");
+        assert!(out.text.starts_with("# 합리적 소비 전환 플랜 — 월 100,000원"));
+    }
+
+    #[test]
+    fn plan_handles_a_budget_below_the_minimum() {
+        let out = call("plan_smart_shopping", "{\"monthly_budget_krw\":50000}");
+        assert!(out.text.contains("## 1단계 — 이 예산으로는 장스오가 성립하지 않는다"));
+        assert!(out.text.contains("요청 예산 50,000원은 장스오 최소 주문 금액 100,000원보다 적다"));
+        assert!(!out.text.contains("## 2단계 — 장스오 적립 시뮬레이션 ("));
+    }
+
+    #[test]
+    fn plan_filters_categories_and_flags_a_short_cart() {
+        let out = call(
+            "plan_smart_shopping",
+            "{\"monthly_budget_krw\":150000,\"categories\":[\"personal_care\"]}",
+        );
+        assert!(out.text.contains("예시 장바구니 · 구강·퍼스널케어"));
+        assert!(out.text.contains("- 합계: 23,800원 — 최소 주문 금액 100,000원에 76,200원 부족하다."));
+        assert!(out.text.contains("최소 금액을 채우려면 이미 쓰는 품목을 더 담아야 한다. 예: 칼맥 디(82,000원)을 더하면 105,800원"));
+        assert!(out.text.contains("최소 주문 금액 미달이라 A Cliks Money는 0원이다"));
+        // Only strategies that cover this area.
+        assert!(out.text.contains("## 카테고리별 전략 (1가지)"));
+        assert!(out.text.contains("소액 필수품 입문형"));
+        assert!(!out.text.contains("필요 1종 · 1일 단가 비교형"));
+    }
+
+    #[test]
+    fn plan_flags_a_cart_that_lands_in_a_higher_band() {
+        let out = call(
+            "plan_smart_shopping",
+            "{\"monthly_budget_krw\":100000,\"categories\":[\"beauty\"]}",
+        );
+        assert!(out.text.contains("- 합계: 206,000원 — 장스오 최소 주문 금액 100,000원 충족."));
+        assert!(out.text.contains(
+            "- 예시 조합 합계 206,000원은 20만 원대 구간이라 월 10,000원이 적용된다(요청 예산 100,000원 = 10만 원대)."
+        ));
+        assert!(out.text.contains("| 2~5회차 | 10,000원 | 4회 | 40,000원 |"));
+        assert!(out.text.contains("## 카테고리별 전략 (1가지)"));
+        assert!(out.text.contains("소진 시점 · 데일리 1종 교체형"));
+    }
+
+    #[test]
+    fn plan_rejects_unknown_inputs_with_the_valid_list() {
+        let err = invoke(
+            "plan_smart_shopping",
+            &crate::json::parse("{\"tier\":\"500k\"}").unwrap(),
+        )
+        .unwrap_err();
+        assert!(err.contains("100k, 200k, 300k"));
+        let err = invoke(
+            "plan_smart_shopping",
+            &crate::json::parse("{\"categories\":[\"crypto\"]}").unwrap(),
+        )
+        .unwrap_err();
+        assert!(err.contains("nutrition, home_living, personal_care, beauty, all"));
+        let err = invoke(
+            "plan_smart_shopping",
+            &crate::json::parse("{\"monthly_budget_krw\":-5}").unwrap(),
+        )
+        .unwrap_err();
+        assert!(err.contains("positive"));
     }
 
     #[test]

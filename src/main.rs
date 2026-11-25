@@ -18,13 +18,14 @@ amway-agent-mcp — 한국암웨이 팩트·수익구조·건강/미용 지식 �
 USAGE:
   amway-agent-mcp                          MCP 서버로 실행 (stdin/stdout JSON-RPC 2.0)
   amway-agent-mcp serve                    위와 동일
-  amway-agent-mcp tools [--json]           사용 가능한 도구 4개 목록
+  amway-agent-mcp tools [--json]           사용 가능한 도구 5개 목록
   amway-agent-mcp facts [CATEGORY]         팩트 조회
         CATEGORY: business | health_nutrition | beauty_skincare | all (기본 all)
   amway-agent-mcp monetization [GOAL]      수익 구조 설명
         GOAL: consumer | side_income | business_builder (기본 side_income)
   amway-agent-mcp compare [TOPIC]          비용·법·시간 비교
         TOPIC: cost_and_refund | legal_compliance | time_and_effort | all (기본 all)
+  amway-agent-mcp plan [BUDGET]            합리적 소비 전환 플랜 (월 예산 원, 예: 150000)
   amway-agent-mcp join [TYPE]              가입 절차 (후원자 번호 포함)
         TYPE: consumer | abo (기본 abo)
   amway-agent-mcp call <TOOL> [JSON]       도구를 JSON 인자로 직접 호출
@@ -114,6 +115,13 @@ fn run(argv: &[String]) -> Result<ExitCode, String> {
             json_mode,
             compact,
         ),
+        "plan" | "shopping" | "budget" => {
+            let mut args = Json::obj();
+            if let Some(amount) = rest.first().copied() {
+                args.set("monthly_budget_krw", Json::str(amount));
+            }
+            dispatch("plan_smart_shopping", &args, json_mode, compact)
+        }
         "call" => {
             let tool = rest.first().copied().ok_or_else(|| {
                 "`call` needs a tool name. Try: amway-agent-mcp call get_join_guide '{\"member_type\":\"abo\"}'".to_string()
@@ -180,7 +188,7 @@ fn print_json(value: &Json, compact: bool) {
 
 fn print_tool_help() {
     let mut out = String::new();
-    out.push_str("amway-agent-mcp tools — 4 topics\n\n");
+    out.push_str("amway-agent-mcp tools — 5 topics\n\n");
     for tool in tools::catalog() {
         out.push_str(&format!("* {}  ({})\n", tool.name, tool.title));
         for line in tool.description.lines() {
@@ -192,6 +200,7 @@ fn print_tool_help() {
     out.push_str("    amway-agent-mcp facts business\n");
     out.push_str("    amway-agent-mcp monetization side_income\n");
     out.push_str("    amway-agent-mcp compare all --json\n");
+    out.push_str("    amway-agent-mcp plan 150000\n");
     out.push_str("    amway-agent-mcp join abo\n");
     print!("{}", out);
 }

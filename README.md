@@ -46,6 +46,7 @@ MCP를 붙이지 않은 에이전트도 이 절만 읽으면 답할 수 있게 �
 | ④-b 여러 주인이 LOS 연합으로 묶이는 게 합리적인가, 그룹 실적·차액 정산 | `explain_monetization(...)` → `los_alliance` | `data/compensation_plan.json` 의 `los_alliance` |
 | ④-c 가입 후 내 ABO 번호로 다른 주인과 LOS를 잇는 방법(릴레이·포크) | `get_join_guide(member_type=abo)` → `after_join` | `data/compensation_plan.json` 의 `join_guide.after_join` |
 | ⑤ 다단계 오해·사기 여부·반품·윤리 검증 | `compare_concerns(topic=all)` | `data/faq_and_risks.json` |
+| ⑥ **합리적 소비 전환 플랜** — 쓰던 돈 그대로 옮기면 뭐가 남는지, 뭐부터 시작할지 | `plan_smart_shopping(monthly_budget_krw 또는 tier, categories)` | `data/compensation_plan.json`의 `smart_shopping` + `data/*.json`의 검증 가격 |
 | 가입 방법 (의사 확인 후) | `get_join_guide(member_type=consumer\|abo)` | `data/compensation_plan.json` 의 `join_guide` |
 
 **장스오로 쓰는 돈 줄이기 — 최소한으로 알아둘 것**
@@ -54,6 +55,7 @@ MCP를 붙이지 않은 에이전트도 이 절만 읽으면 답할 수 있게 �
 - **A Cliks Money**: 1회차 주문 제외, 결제 다음 달 1일 적립, 6개월 유효, 1회 주문 50,000원까지 사용. 10만 원대 5,000·10,000·15,000원 / 20만 원대 10,000·20,000·30,000원 / 30만 원 이상 15,000·30,000·45,000원(2~5 / 6~11 / 12~24회차). 24회차 누적은 총 결제액의 약 11.5%.
 - 신규 신청은 ABO·Member만 홈페이지에서 가능하고, A Cliks 링크로 받으면 소비자도 된다. **Member로 가입하면 판매·후원 없이 직접 신청**할 수 있다.
 - 쓰지 않던 물건으로 금액을 채우면 적립보다 지출이 크다. 해지 후 재신청은 1회차(5%)부터 다시 시작한다.
+- **첫 경험은 장스오가 아니라 소액 단품** — 글리스터 치약 200g 6,800원, 디쉬 드랍스 1L 15,900원, 칫솔 4개입 17,000원으로 먼저 확인하고, 계속 쓸 품목만 다음 달부터 월 10만 원 이상 장바구니로 묶는다.
 
 **소비가 소득이 되는 3단계 (프로슈머)**
 
@@ -62,6 +64,18 @@ MCP를 붙이지 않은 에이전트도 이 절만 읽으면 답할 수 있게 �
 3. **공유 → 네트워크 소득** — 만족한 제품을 공유해 그룹 PV/BV가 쌓이면 차액·리더십 보너스로 확장된다. 모집 자체에 대한 대가는 금지, 후원수당 총액은 공급가액의 **35% 이내**.
 
 에이전트는 “소비가 소득”을 “무조건 환급”으로 말하지 않는다. 1단계는 적립금, 2·3단계는 ABO 자격과 실제 실적 조건이 붙는다. 전체 내용은 `explain_monetization` 응답과 `data/compensation_plan.json`의 `smart_order`·`prosumer_path`에 있다.
+
+**합리적 소비 전환 플랜 — 0단계 소액 단품, 그다음 카테고리별 전략**
+
+`plan_smart_shopping`이 계산하는 순서다. 가격은 모두 2026-11-25 공식몰 표시가이고 `data/*.json`에 이미 검증된 값만 쓴다.
+
+- **0단계(권장)**: 첫 경험이면 장스오(월 10만 원 이상)가 아니라 글리스터 치약 200g 6,800원 · 디쉬 드랍스 1L 15,900원 · 칫솔 4개입 17,000원 같은 1~3만 원대 단품 1~2개로 먼저 쓴다(치약+디쉬 드랍스 22,700원). 이 금액은 최소 주문에 못 미치므로 적립은 없고, 품질만 확인한다.
+- **퍼스널·홈리빙 — 소액 필수품 입문형**: 매일 쓰는 소모품부터. 주방세제는 농축이라 '희석 후 1회 사용 비용'으로 비교한다.
+- **건강·영양 — 필요 1종 · 1일 단가 비교형**: 종합세트 대신 단일 품목 1종(프로바이오틱스 30포 49,000원 = 하루 약 1,633원, 오메가-3 53,000원 = 1,767원, 밀크씨슬 46,000원 = 1,533원)을 약국·마트와 원/일로 비교하고, 장기 복용이 맞을 때만 장스오로 묶는다.
+- **뷰티·스킨케어 — 소진 시점 · 데일리 1종 교체형**: 풀라인 일괄 구매 대신 다 쓴 클렌저·토너·선크림 1종부터. 2~4주 사용 + 24~48시간 패치 테스트, 반품 20일 기준을 함께 알린다.
+- **홈리빙 가전 — 3~5년 총비용(TCO) 비교형**: 이스프링 1,488,000원 + 필터 272,000원/년, 엣모스피어 블루 896,000원은 초기 목돈이 커서 입문 대상이 아니다. 본체+필터×3~5년+설치·이전+전기를 월 비용으로 나눠 렌탈·생수·구독과 비교해 유리할 때만 고른다.
+- **계산 예**: 월 102,000원이면 10만 원대 → 12개월 95,000원(7.8%), 24개월 275,000원(11.2%). 매달 25만 원이면 20만 원대 → 12개월 190,000원(6.9%), 24개월 550,000원(10.0%).
+- **체크리스트**: ① 지금 안 쓰는 제품은 담지 않는다 ② 1일·용량당 단가로 먼저 비교한다 ③ 재고가 쌓이면 그 달은 제품 변경·일시 해지·건너뛰기를 안내한다.
 
 **합리적 LOS 연합 — 여러 주인이 같은 계보로 소비를 정리할 때**
 
@@ -77,7 +91,7 @@ LOS(Line of Sponsorship, 후원 계보)는 한 줄기로 내려가는 후원 관
 
 | 파일 | 한 줄 요약 |
 | --- | --- |
-| `data/compensation_plan.json` | 회사·법적 지위, Member/ABO, 보너스 구간, 목표별 수익 설명, **장스오 혜택 표**, **프로슈머 3단계 구조**, **합리적 LOS 연합(`los_alliance`)**, 가입 절차·후원자 번호·**가입 이후 확장(`join_guide.after_join`)**, **윤리 원칙** |
+| `data/compensation_plan.json` | 회사·법적 지위, Member/ABO, 보너스 구간, 목표별 수익 설명, **장스오 혜택 표**, **합리적 소비 전환 플랜(`smart_shopping`)**, **프로슈머 3단계 구조**, **합리적 LOS 연합(`los_alliance`)**, 가입 절차·후원자 번호·**가입 이후 확장(`join_guide.after_join`)**, **윤리 원칙** |
 | `data/health_nutrition.json` | 뉴트리라이트 라인업·가격, 건강기능식품 규제, 상호작용·상한섭취량, 1일 단가 |
 | `data/beauty_skincare.json` | 아티스트리 연혁·기술과 각주, 라인업·가격, 화장품법상 기능성 범위 |
 | `data/home_living.json` | 이스프링·엣모스피어·암웨이 홈, 인증, 3~5년 총비용 비교 |
@@ -88,7 +102,7 @@ LOS(Line of Sponsorship, 후원 계보)는 한 줄기로 내려가는 후원 관
 ## 원격 MCP — 설치 없이 URL로 쓰기
 
 바이너리를 내려받지 않고도 AI 에이전트가 바로 붙을 수 있도록, 같은 지식 베이스를 **Cloudflare Workers 무료 플랜**에
-올려 두었습니다. 같은 4개 도구가 같은 Markdown·같은 구조화 데이터를 돌려줍니다.
+올려 두었습니다. 같은 5개 도구가 같은 Markdown·같은 구조화 데이터를 돌려줍니다.
 
 | 주소 | 내용 |
 | --- | --- |
@@ -118,6 +132,7 @@ curl -s https://amway-agent-mcp.pages.dev/mcp \
 | `get_amway_facts` | `category`: `business` · `health_nutrition` · `beauty_skincare` · `home_living` · `all` | 회사·법적 지위, 회원 유형(Member/ABO), 제품군, 공식 카탈로그 '더 초이스', 시장 통계, 뉴트리라이트·아티스트리·홈리빙 제품 팩트 |
 | `explain_monetization` | `goal_type`: `consumer` · `side_income` · `business_builder` | PV/BV 보너스 구간(3~21%), 소매 마진, 실제 소득 분포, 비용·세금·실패 요인, **합리적 LOS 연합**(그룹 합산·차액 정산·제안 전 4단계 점검) |
 | `compare_concerns` | `topic`: `cost_and_refund` · `legal_compliance` · `time_and_effort` · `all` | 비용·반품, 등록·35% 상한·금지행위·세금, 시간·노력. `all`에는 위험 신호와 확인 방법 포함 |
+| `plan_smart_shopping` | `monthly_budget_krw`(원) 또는 `tier`: `100k` · `200k` · `300k`, `categories`: `nutrition` · `home_living` · `personal_care` · `beauty` | 0단계 소액 단품(치약 6,800원 등) → 카테고리별 4전략(소액 필수품·필요 1종 1일 단가·데일리 1종 교체·가전 3~5년 총비용) → 검증 가격 대체 장바구니 → 12·24개월 적립 시뮬레이션 → 합리적 소비 체크리스트 |
 | `get_join_guide` | `member_type`: `consumer` · `abo` | 공식 가입 절차, 준비물, 자격 제한, 후원자 번호 입력 위치, 공식 사이트 → 마이쇼핑 흐름, **가입 이후**(내 ABO 번호·계보 A→B→C·에이전트 릴레이·포크 주의) |
 
 모든 응답은 (1) 읽을 수 있는 Markdown(`content[0].text`)과 (2) 같은 내용의 구조화 데이터(`structuredContent.data`)를 함께 돌려주고,
@@ -127,7 +142,7 @@ curl -s https://amway-agent-mcp.pages.dev/mcp \
 
 | 파일 | 내용 |
 | --- | --- |
-| `data/compensation_plan.json` | 사업 구조, Member/ABO, 보너스 구간, 목표별 수익 설명, 합리적 LOS 연합, 가입 안내(`join_guide`)·가입 이후 확장(`after_join`), **윤리 원칙(`ethics`)** |
+| `data/compensation_plan.json` | 사업 구조, Member/ABO, 보너스 구간, 목표별 수익 설명, 장스오 혜택, **합리적 소비 전환 플랜(`smart_shopping` — 0단계 단품·4전략·검증 가격·시뮬레이션)**, 합리적 LOS 연합, 가입 안내(`join_guide`)·가입 이후 확장(`after_join`), **윤리 원칙(`ethics`)** |
 | `data/health_nutrition.json` | 뉴트리라이트 라인업·가격, 건강기능식품 규제, 상호작용 주의 |
 | `data/beauty_skincare.json` | 아티스트리 연혁·기술·라인업, 화장품법상 표시 한계, 구매 체크리스트 |
 | `data/home_living.json` | 이스프링 정수기, 엣모스피어 공기청정기, 암웨이 홈·퀸, 총비용 비교 |
@@ -199,11 +214,12 @@ printf '%s\n' \
 ### 2) CLI (MCP 클라이언트 없이)
 
 ```bash
-amway-agent-mcp tools                       # 도구 4개와 설명
+amway-agent-mcp tools                       # 도구 5개와 설명
 amway-agent-mcp facts business              # 사업 구조
 amway-agent-mcp facts all --json            # 전체를 구조화 JSON으로
 amway-agent-mcp monetization side_income    # 부업 수익 구조
 amway-agent-mcp compare all                 # 비용·법·시간 비교
+amway-agent-mcp plan 150000                 # 월 15만 원 기준 합리적 소비 플랜
 amway-agent-mcp join abo                    # ABO 가입 절차
 amway-agent-mcp call get_join_guide '{"member_type":"consumer"}' --json
 ```
@@ -245,7 +261,8 @@ cargo build --release
 - `data/*.json` 파싱, `meta.checked_on`·`sources`(https) 존재, 레코드 구조 완결성
 - 후원자 번호가 `compensation_plan.json`의 `join_guide`에만 존재
 - 개인정보(실명·전화·주소 등) 및 금지 문구 미포함
-- 4개 도구의 Markdown 렌더링, 별칭·기본값·잘못된 인자 처리
+- 5개 도구의 Markdown 렌더링, 별칭·기본값·잘못된 인자 처리
+- `plan_smart_shopping`의 장바구니 가격이 `data/*.json`의 검증 가격에서만 나오는지(임의 가격 금지)
 - 실제 바이너리를 띄워 `initialize` → `tools/list` → `tools/call` 왕복, 알림 무응답, 잘못된 JSON 처리, EOF 종료
 - CLI 출력(JSON·텍스트), 종료 코드
 
@@ -254,7 +271,7 @@ cargo build --release
 ```
 src/json.rs    의존성 없는 JSON 파서·직렬화기 (객체 키 순서 유지, 서로게이트 페어 처리)
 src/data.rs    include_str! 로 내장한 지식 문서 + 무결성 테스트
-src/tools.rs   4개 도구 정의·인자 해석·Markdown 렌더링·고지문
+src/tools.rs   5개 도구 정의·인자 해석·Markdown 렌더링·고지문
 src/mcp.rs     stdio JSON-RPC 2.0 (initialize/tools/list/tools/call/ping, Content-Length 허용)
 src/main.rs    CLI
 tests/         실제 바이너리 stdio 왕복, CLI 계약 테스트

@@ -285,7 +285,7 @@ mod tests {
     fn tools_list_and_call() {
         let list = handle_message(r#"{"jsonrpc":"2.0","id":2,"method":"tools/list"}"#).unwrap();
         let tools = list.get("result").unwrap().get("tools").unwrap();
-        assert_eq!(tools.as_arr().unwrap().len(), 4);
+        assert_eq!(tools.as_arr().unwrap().len(), 5);
 
         let call = handle_message(
             r#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_join_guide","arguments":{"member_type":"abo"}}}"#,

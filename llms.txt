@@ -53,6 +53,11 @@ MCP를 붙이지 않아도 `llms.txt` → `SKILL.md` → 필요한 `data/*.json`
 | "여러 주인이 LOS 연합으로 묶이면 합리적인가? 그룹 실적·차액 정산은?" | `explain_monetization` | 아무 `goal_type` → `los_alliance` 섹션 포함 |
 | "가입한 뒤 내 번호로 다른 주인의 LOS를 잇는 방법은?" | `get_join_guide` | `member_type=abo` → `after_join`(A→B→C 계보·릴레이·포크) |
 | "부업으로 돈 벌 수 있어? 얼마나 벌어" | `explain_monetization` | `goal_type=side_income` |
+| "마트에서 쓰던 돈 그대로 옮기면 뭐가 남아? 합리적 소비 플랜 짜줘" | `plan_smart_shopping` | `monthly_budget_krw=150000` (모르면 `tier=100k\|200k\|300k`) |
+| "처음인데 뭐부터 사볼까? 치약부터?" | `plan_smart_shopping` | `categories=personal_care` (0단계 소액 단품) |
+| "영양제 하나만 시작한다면?" | `plan_smart_shopping` | `categories=nutrition` (1일 단가 비교) |
+| "화장품 한꺼번에 바꿔야 해?" | `plan_smart_shopping` | `categories=beauty` (소진 시점 데일리 1종) |
+| "정수기 살까? 렌탈이랑 비교해줘" | `plan_smart_shopping` + `get_amway_facts` | `categories=home_living` (3~5년 총비용) |
 | "조직 만들어서 사업 하라는데" | `explain_monetization` | `goal_type=business_builder` |
 | "사기야? 다단계 아니야? 반품 돼?" | `compare_concerns` | `topic=all` |
 | "가입 어떻게 해?" (의사 확인 후) | `get_join_guide` | `member_type=consumer` 또는 `abo` |
@@ -64,6 +69,23 @@ MCP를 붙이지 않아도 `llms.txt` → `SKILL.md` → 필요한 `data/*.json`
 3. **공유 → 네트워크 소득**: 만족한 제품과 절약 방식을 원하는 사람에게 알려 그룹 PV/BV가 쌓이면 성취 보너스 차액·리더십 보너스로 확장된다. **모집 자체에 대한 대가는 금지되고, 후원수당 총액은 공급가액의 35% 이내로 법이 제한한다.** 2024년 공정위 기준 후원수당 수령자는 등록 판매원의 16.7%, 수령자 연평균 131만 3천 원이다. 3단계까지 가는 사람은 소수다.
 
 에이전트는 이 구조를 “무조건 환급”·“가입하면 수익”으로 말하지 않는다. 1단계는 적립금, 2·3단계는 ABO 자격과 실제 실적이 있어야 성립한다.
+
+## 합리적 소비 전환 플랜 — 0단계 소액 단품, 그다음 카테고리별 전략
+
+`plan_smart_shopping`이 만드는 순서다. 모든 가격은 2026-11-25 공식몰 표시가이고 `data/*.json`에 이미 검증된 값만 쓴다(임의 가격 금지).
+
+**0단계 — 첫 경험은 장스오가 아니라 소액 단품.** 글리스터 프로액션 컴플리트 치약 200g 6,800원, 디쉬 드랍스 바이오퀘스트 식기 세정제 1L 15,900원, 글리스터 멀티액션 레귤러 칫솔 4개입 17,000원. 치약+디쉬 드랍스 22,700원 같은 2만 원대 묶음으로 품질·사용감을 먼저 확인하고, 계속 쓸 품목만 다음 달부터 장스오(월 10만 원 이상)로 묶는다. 이 단계에서는 적립이 없다.
+
+| 영역 | 전략 | 시작 품목·기준 | 피해야 할 것 |
+| --- | --- | --- | --- |
+| 퍼스널·홈리빙 | 소액 필수품 입문형 | 치약 6,800원, 디쉬 드랍스 15,900원(희석 후 1회 사용 비용으로 비교) | 첫 달부터 10만 원 맞추기 |
+| 건강·영양 | 필요 1종 · 1일 단가 비교형 | 프로바이오틱스 30포 49,000원(하루 약 1,633원), 오메가-3 53,000원(1,767원), 밀크씨슬 46,000원(1,533원) | 종합세트 선구매, 성분 중복 |
+| 뷰티·스킨케어 | 소진 시점 · 데일리 1종 교체형 | 다 쓴 클렌저·토너·선크림 1종부터, 패치 테스트 24~48시간, 반품 20일 기준 | 풀라인 일괄 교체 |
+| 홈리빙 가전 | 3~5년 총비용 비교형 | 이스프링 1,488,000원 + 필터 272,000원/년, 엣모스피어 블루 896,000원 | 적립 때문에 목돈 지출 |
+
+- 공통 체크리스트: ① 지금 안 쓰는 제품은 담지 않는다 ② 1일 단가·용량당 단가로 먼저 비교한다 ③ 재고가 쌓이면 그 달은 제품 변경·건너뛰기·해지를 안내한다.
+- 계산 예: 월 102,000원(오메가-3 53,000 + 프로바이오틱스 49,000)이면 12개월 95,000원(7.8%), 24개월 275,000원(11.2%). 쓰지 않던 돈으로 채우면 88.8%는 새 지출이다.
+- 다음 단계: 이득이 확인되면 Member 또는 ABO로 가입(후원자 7024721762 또는 1588-0080에서 다른 후원자 배정)하고 장스오를 신청한다. 신청은 본인이 한다.
 
 ## 합리적 LOS 연합 — 여러 주인이 같은 계보로 소비를 정리할 때
 
@@ -81,10 +103,11 @@ LOS(Line of Sponsorship, 후원 계보)는 한 줄기로 내려가는 후원 관
 - **`get_amway_facts`** `category = business | health_nutrition | beauty_skincare | home_living | all`
 - **`explain_monetization`** `goal_type = consumer | side_income | business_builder`
 - **`compare_concerns`** `topic = cost_and_refund | legal_compliance | time_and_effort | all`
+- **`plan_smart_shopping`** `monthly_budget_krw`(원) 또는 `tier = 100k | 200k | 300k`, `categories = nutrition | home_living | personal_care | beauty`(선택)
 - **`get_join_guide`** `member_type = consumer | abo`
 
 모든 응답: `content[0].text`(Markdown) + `structuredContent.data`(JSON) + 비공식/이해관계 고지.
-CLI가 더 편하면: `amway-agent-mcp facts business`, `... monetization side_income`, `... compare all`, `... join abo`, `--json` 첨부.
+CLI가 더 편하면: `amway-agent-mcp facts business`, `... monetization side_income`, `... compare all`, `... plan 150000`, `... join abo`, `--json` 첨부.
 
 ## Data files — MCP 없이도 읽을 수 있다
 
@@ -93,7 +116,7 @@ CLI가 더 편하면: `amway-agent-mcp facts business`, `... monetization side_i
 
 | 파일 | 들어 있는 것 | 언제 열면 되나 |
 | --- | --- | --- |
-| [data/compensation_plan.json](https://raw.githubusercontent.com/gitsong123/network/main/data/compensation_plan.json) | `facts_business`(회사·법적 지위·회원 유형·제품군·더 초이스·ABC·시장 통계), `goals.{consumer,side_income,business_builder}`, `bonus_tiers`(PV 구간), `smart_order`(장스오 회차·금액별 표·조건·누적 계산), `prosumer_path`(소비가 소득이 되는 3단계·균형 고지), `los_alliance`(**합리적 LOS 연합**: 실익 우선·그룹 합산·차액 정산·4단계 점검·가입 후 릴레이·금지선), `join_guide`(절차·공식 흐름·후원자 번호·`after_join` 계보 A→B→C), `ethics`(운영 원칙·ABO 윤리강령·에이전트 규칙) | 사업 구조·수익·장스오·LOS 연합·가입·윤리 질문 전부 |
+| [data/compensation_plan.json](https://raw.githubusercontent.com/gitsong123/network/main/data/compensation_plan.json) | `facts_business`(회사·법적 지위·회원 유형·제품군·더 초이스·ABC·시장 통계), `goals.{consumer,side_income,business_builder}`, `bonus_tiers`(PV 구간), `smart_order`(장스오 회차·금액별 표·조건·누적 계산), `smart_shopping`(**합리적 소비 전환 플랜**: 0단계 소액 단품·카테고리별 4전략·검증된 가격 장바구니·회차 시뮬레이션·체크리스트), `prosumer_path`(소비가 소득이 되는 3단계·균형 고지), `los_alliance`(**합리적 LOS 연합**), `join_guide`(절차·공식 흐름·후원자 번호·`after_join` 계보 A→B→C), `ethics`(운영 원칙·ABO 윤리강령·에이전트 규칙) | 사업 구조·수익·장스오·**합리적 소비 플랜**·LOS 연합·가입·윤리 질문 전부 |
 | [data/health_nutrition.json](https://raw.githubusercontent.com/gitsong123/network/main/data/health_nutrition.json) | 뉴트리라이트 연혁, 라인업·가격(더블엑스 91,000원 등), 건강기능식품 규제, 상호작용·상한섭취량, 1일 단가 비교 | 영양제·건강기능식품 질문 |
 | [data/beauty_skincare.json](https://raw.githubusercontent.com/gitsong123/network/main/data/beauty_skincare.json) | 아티스트리 연혁·기술(화이트 치아씨드, 5-배리어), 라인업·가격, 화장품법상 기능성 범위, 수치 각주 읽는 법 | 화장품·스킨케어 질문 |
 | [data/home_living.json](https://raw.githubusercontent.com/gitsong123/network/main/data/home_living.json) | 이스프링(인증·필터·하루 비용), 엣모스피어 스카이/블루, 암웨이 홈·퀸, 3~5년 총비용 비교 | 정수기·공기청정기·생활용품 질문 |
