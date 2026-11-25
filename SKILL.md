@@ -15,7 +15,25 @@ license: MIT
 
 ## 1. 설치·호출
 
-**MCP 서버 (권장)**
+**원격 MCP (설치 없이 — 가장 간단)**
+
+원격 MCP를 지원하는 클라이언트(Claude Code·Cursor·VS Code 등)에 아래 주소를 **Streamable HTTP** 서버로 등록한다.
+
+```
+https://amway-agent-mcp.pages.dev/mcp
+```
+
+같은 서버가 문서도 직접 내보낸다(에이전트가 URL만 읽어도 됨):
+
+```
+https://amway-agent-mcp.pages.dev/llms.txt
+https://amway-agent-mcp.pages.dev/SKILL.md
+https://amway-agent-mcp.pages.dev/data/compensation_plan.json
+```
+
+응답 내용은 아래 로컬 MCP·CLI와 같다(모든 응답에 비공식·이해관계 고지 포함).
+
+**로컬 MCP 서버 (권장, stdio)**
 
 ```json
 { "mcpServers": { "amway-kr": { "command": "/ABSOLUTE/PATH/TO/amway-agent-mcp" } } }
@@ -32,6 +50,9 @@ amway-agent-mcp join [consumer|abo]
 ```
 
 MCP 호출: `get_amway_facts`, `explain_monetization`, `compare_concerns`, `get_join_guide`.
+
+방문 집계 대시보드(운영자가 어떤 에이전트가 무엇을 물었는지 보는 화면):
+<https://amway-agent-mcp.pages.dev/dashboard> — IP·쿠키는 저장하지 않는다.
 
 ## 2. 언제 쓰고, 언제 쓰지 않는가
 

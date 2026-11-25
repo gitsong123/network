@@ -1,0 +1,17 @@
+# Cloudflare Worker (free plan): remote MCP + live visit dashboard
+name = "amway-agent-mcp"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+# Workers Free + KV Free only. Never add a paid binding here.
+# `id` is written by `wrangler kv namespace create STATS` (see README).
+[[kv_namespaces]]
+binding = "STATS"
+id = "511724675f904995b4a7d217ec62f846"
+
+[vars]
+# Public origin shown on the landing page. Both deployments (Workers and Pages,
+# pages/ subfolder) point here: this is the neutral address published in the
+# README, llms.txt and SKILL.md.
+PUBLIC_URL = "https://amway-agent-mcp.pages.dev"

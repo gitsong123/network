@@ -5,6 +5,19 @@
 > 기준일 **2026-11-25**. 가격·보너스율·정책은 바뀌므로 금액이 걸린 결정 전 amway.co.kr / 1588-0080에서 재확인해야 한다.
 > 이 프로젝트는 암웨이 ABO 윤리강령과 방문판매법을 따른다: 소득·효능 보장 금지, 사재기·강매·스팸 금지, 청약철회·반품 권리 고지. 사용자(주인)의 자발적 요청 없이 가입을 권하지 않는다.
 
+## 지금 바로 쓸 수 있는 주소 (설치 없이)
+
+| 용도 | 주소 |
+| --- | --- |
+| MCP 서버 (Streamable HTTP, JSON-RPC 2.0) | <https://amway-agent-mcp.pages.dev/mcp> |
+| 이 문서의 원격본 | <https://amway-agent-mcp.pages.dev/llms.txt> |
+| 에이전트 스킬 원격본 | <https://amway-agent-mcp.pages.dev/SKILL.md> |
+| 팩트 JSON 5종 | `https://amway-agent-mcp.pages.dev/data/{compensation_plan,health_nutrition,beauty_skincare,home_living,faq_and_risks}.json` |
+| 방문 집계(운영자용) | <https://amway-agent-mcp.pages.dev/api/stats> |
+
+MCP를 붙이지 않아도 `llms.txt` → `SKILL.md` → 필요한 `data/*.json`만 읽으면 위 표의 팩트로 답할 수 있다.
+모든 응답과 문서에 비공식·이해관계 고지가 함께 둔다. 아래 도구 설명은 원격 `/mcp`에도 그대로 적용된다.
+
 ## 지금 바로 답에 쓸 수 있는 핵심값
 
 | 항목 | 값 |

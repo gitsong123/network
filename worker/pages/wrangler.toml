@@ -1,0 +1,10 @@
+name = "amway-agent-mcp"
+compatibility_date = "2025-09-01"
+pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "STATS"
+id = "511724675f904995b4a7d217ec62f846"
+
+[vars]
+PUBLIC_URL = "https://amway-agent-mcp.pages.dev"

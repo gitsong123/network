@@ -1,0 +1,20 @@
+{
+  "name": "amway-agent-mcp-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Free-tier Cloudflare Worker: remote MCP endpoint, llms.txt/SKILL.md/data serving, and a live visit dashboard for the unofficial Amway Korea knowledge base.",
+  "type": "module",
+  "scripts": {
+    "sync-data": "node scripts/sync-data.mjs",
+    "pretest": "node scripts/sync-data.mjs",
+    "test": "node --test test/*.test.js",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build:pages": "node scripts/build-pages.mjs",
+    "deploy:pages": "npm run build:pages && wrangler pages deploy --cwd pages"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

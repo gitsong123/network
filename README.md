@@ -5,6 +5,10 @@ Rust 단일 바이너리, 외부 크레이트 0개, 데이터 내장(`include_st
 
 저장소: <https://github.com/gitsong123/network> · 에이전트용 요약본: [llms.txt](llms.txt)
 
+**설치 없이 바로 쓰는 원격 MCP** (Cloudflare Workers 무료 플랜):
+<https://amway-agent-mcp.pages.dev/mcp> · 방문 대시보드: <https://amway-agent-mcp.pages.dev/dashboard>
+— 아래 [원격 MCP](#원격-mcp--설치-없이-url로-쓰기) 참고.
+
 > ### ⚠️ 비공식 프로젝트입니다
 > 이 저장소는 **한국암웨이(주)의 공식 자료도, 회사가 승인·후원한 채널도 아닙니다.**
 > **독립 ABO(독립 사업자, 후원 번호 `7024721762`)가 정보 제공을 목적으로 운영하는 비공식 안내 프로젝트**이며,
@@ -53,6 +57,32 @@ MCP를 붙이지 않은 에이전트도 이 절만 읽으면 답할 수 있게 �
 | `data/faq_and_risks.json` | 비용·반품, 법·규제, 시간·노력, 위험 신호, 5분 확인법, 흔한 오해 |
 
 ---
+
+## 원격 MCP — 설치 없이 URL로 쓰기
+
+바이너리를 내려받지 않고도 AI 에이전트가 바로 붙을 수 있도록, 같은 지식 베이스를 **Cloudflare Workers 무료 플랜**에
+올려 두었습니다. 같은 4개 도구가 같은 Markdown·같은 구조화 데이터를 돌려줍니다.
+
+| 주소 | 내용 |
+| --- | --- |
+| <https://amway-agent-mcp.pages.dev/mcp> | 원격 MCP (Streamable HTTP, JSON-RPC 2.0). 세션 없이 `initialize` → `tools/call` |
+| <https://amway-agent-mcp.pages.dev/llms.txt> | 에이전트용 요약 (이 파일의 원격본) |
+| <https://amway-agent-mcp.pages.dev/SKILL.md> | 에이전트 스킬 (원격본) |
+| <https://amway-agent-mcp.pages.dev/data/compensation_plan.json> | 팩트 JSON 5종 (`/data/health_nutrition.json` 등) |
+| <https://amway-agent-mcp.pages.dev/api/stats> | 방문 집계 JSON |
+| <https://amway-agent-mcp.pages.dev/dashboard> | **실시간 방문 대시보드** — 어떤 AI 에이전트가 언제 무엇을 물었는지 |
+
+MCP 클라이언트에는 `/mcp` 주소를 원격 서버로 등록하고 전송 방식은 **Streamable HTTP**를 고르세요.
+
+```bash
+curl -s https://amway-agent-mcp.pages.dev/mcp \
+  -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_amway_facts","arguments":{"category":"business"}}}'
+```
+
+대시보드는 `/mcp`·`/llms.txt`·`/SKILL.md`·`/data/*` 요청을 **경로·도구·인자·에이전트 분류(User-Agent)·KST 시각**으로만
+집계합니다. **IP·쿠키·User-Agent 원문은 저장하지 않으며**, Workers Free + KV Free 한도 안에서만 동작합니다(과금 없음).
+구현·배포 방법은 [worker/README.md](worker/README.md).
 
 ## 무엇이 들어 있나
 
@@ -200,7 +230,11 @@ src/tools.rs   4개 도구 정의·인자 해석·Markdown 렌더링·고지문
 src/mcp.rs     stdio JSON-RPC 2.0 (initialize/tools/list/tools/call/ping, Content-Length 허용)
 src/main.rs    CLI
 tests/         실제 바이너리 stdio 왕복, CLI 계약 테스트
+worker/        같은 도구를 서빙하는 원격 MCP + 방문 대시보드 (Cloudflare Workers 무료 플랜)
 ```
+
+원격 Worker의 테스트(`cd worker && npm test`)는 위 Rust 구현과 **같은 Markdown을 내는지**까지 비교합니다
+(Rust 바이너리를 빌드해 두었다면 바이트 단위로 대조).
 
 ## 라이선스
 
