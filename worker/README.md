@@ -52,7 +52,12 @@ cd worker
 npm install            # wrangler (devDependency)
 npm test               # node --test, 40개 (KV는 인메모리 목)
 npm run dev            # wrangler dev --local → http://127.0.0.1:8787
+npm run smoke          # 배포된 인스턴스 실사용 점검 (10개 검사, 실제 방문으로 집계됨)
 ```
+
+`npm run smoke`는 의존성 없이 `fetch`만으로 `/health`·`/llms.txt`·`/SKILL.md`·`/data/*`·`initialize`·
+`tools/list`·`tools/call`·잘못된 인자 처리·`/api/stats`·`/dashboard`를 확인하고, 실패가 있으면 0이 아닌
+종료 코드를 돌려줍니다. 다른 배포를 향할 때는 `node scripts/smoke.mjs https://<host>`.
 
 테스트가 확인하는 것:
 
@@ -111,6 +116,7 @@ src/dashboard.js         대시보드·랜딩 HTML (프레임워크 없음, 인�
 src/assets.generated.js  sync-data가 만드는 번들 (직접 수정 금지)
 scripts/sync-data.mjs    지식 베이스 번들러
 scripts/build-pages.mjs  Pages용 번들 생성
+scripts/smoke.mjs        배포본 실사용 점검 (의존성 없음)
 pages/wrangler.toml      Pages 프로젝트 설정 (dist/_worker.js)
 test/                    node --test (MCP, HTTP, 추적, 번들 무결성, Rust 패리티)
 ```
