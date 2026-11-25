@@ -151,9 +151,18 @@ const CLIENT_SCRIPT = String.raw`
     document.getElementById('updated').textContent = '갱신 ' + lastAt.toTimeString().slice(0,8);
   }
 
+  // The page is only served when ?token=… matched, so the same token is carried
+  // to /api/stats; otherwise a locked dashboard would render but never load data.
+  function token(){
+    try{ return new URLSearchParams(location.search).get('token') || ''; }catch(e){ return ''; }
+  }
+
   function load(){
-    fetch('/api/stats', {cache:'no-store'}).then(function(r){ return r.json(); }).then(render)
-      .catch(function(){ document.getElementById('updated').textContent = '불러오기 실패 — 잠시 후 다시 시도합니다'; });
+    var q = token();
+    fetch('/api/stats' + (q ? '?token=' + encodeURIComponent(q) : ''), {cache:'no-store'})
+      .then(function(r){ if(r.status === 401 || r.status === 403){ throw new Error('unauthorized'); } return r.json(); })
+      .then(render)
+      .catch(function(){ document.getElementById('updated').textContent = '불러오기 실패 — 토큰을 확인하거나 잠시 후 다시 시도합니다'; });
   }
 
   function schedule(){
@@ -289,8 +298,8 @@ pre{background:var(--panel);border:1px solid var(--line);border-radius:12px;padd
       <a class="link" href="/llms.txt"><b>llms.txt</b><span>에이전트용 요약 (핵심값·질문 매핑)</span></a>
       <a class="link" href="/SKILL.md"><b>SKILL.md</b><span>에이전트 규칙·니즈별 매핑</span></a>
       <a class="link" href="/mcp"><b>/mcp</b><span>MCP Streamable HTTP (POST, JSON-RPC 2.0)</span></a>
-      <a class="link" href="/dashboard"><b>/dashboard</b><span>실시간 방문·조회 대시보드</span></a>
-      <a class="link" href="/api/stats"><b>/api/stats</b><span>집계 JSON</span></a>
+      <a class="link" href="/dashboard"><b>/dashboard</b><span>실시간 방문·조회 대시보드 (토큰 필요)</span></a>
+      <a class="link" href="/api/stats"><b>/api/stats</b><span>집계 JSON (토큰 필요)</span></a>
       <a class="link" href="/data/compensation_plan.json"><b>/data/:name</b><span>원본 팩트 JSON 5종</span></a>
     </div>
     <pre>curl -s ${escAttr(mcpLine)} -H 'content-type: application/json' \\

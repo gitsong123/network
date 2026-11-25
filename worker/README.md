@@ -100,10 +100,27 @@ npm run deploy:pages                                 # ② Pages (pages.dev) —
 시크릿을 넣고 `?token=...`으로만 열면 됩니다:
 
 ```bash
-npx wrangler secret put DASHBOARD_TOKEN     # 값을 입력 (Pages는 대시보드의 Settings → Variables)
+# ① Workers
+npx wrangler secret put DASHBOARD_TOKEN
+# ② Pages (둘 다 같은 값을 넣어야 두 주소가 함께 잠깁니다)
+npx wrangler pages secret put DASHBOARD_TOKEN --project-name amway-agent-mcp
+# ②는 시크릿을 넣은 뒤 Pages를 한 번 다시 배포해야 반영됩니다
+npm run deploy:pages
 # → https://<host>/dashboard?token=<값>
 #    Authorization: Bearer <값> 도 허용 (대시보드와 /api/stats 둘 다 적용)
 ```
+
+잠긴 상태의 동작:
+
+| 경로 | 토큰 없음 | 토큰 있음 |
+| --- | --- | --- |
+| `/dashboard` | 403 (접근 제한 페이지) | 200 대시보드 |
+| `/api/stats` | 401 `{"ok":false,"error":"unauthorized"}` | 200 집계 JSON |
+| `/`, `/mcp`, `/llms.txt`, `/SKILL.md`, `/data/*` | 200 (그대로 공개) | 200 |
+
+- 대시보드 페이지는 주소의 `?token=`을 `/api/stats` 호출에 그대로 넘깁니다. 토큰 없이 열면 카드가 비어 있습니다.
+- `/dashboard`와 `/api/stats`는 집계에서 제외되므로 대시보드를 새로고침해도 방문 수가 늘지 않습니다.
+- 토큰 값을 저장소·커밋·문서에 적지 마세요. 값을 잊으면 시크릿을 새로 넣고 같은 방식으로 다시 배포하면 됩니다.
 
 ## 파일
 

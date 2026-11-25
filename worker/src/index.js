@@ -76,6 +76,32 @@ function notFound(message = 'Not found') {
   return json({ ok: false, error: message }, 404);
 }
 
+const LOCKED_HTML =
+  '<!doctype html><html lang="ko"><head><meta charset="utf-8">' +
+  '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+  '<meta name="robots" content="noindex,nofollow"><title>접근 제한 — amway-agent-mcp</title></head>' +
+  '<body style="font-family:system-ui,-apple-system,\'Apple SD Gothic Neo\',sans-serif;padding:40px;line-height:1.6">' +
+  '<h1 style="font-size:18px;margin:0 0 8px">접근 제한 (403)</h1>' +
+  '<p style="margin:0 0 8px">이 대시보드는 운영자 전용입니다. 주소 끝에 <code>?token=…</code>를 붙여 주세요.</p>' +
+  '<p style="margin:0;color:#6b7280;font-size:13px">' +
+  '<a href="/">홈</a> · <a href="/llms.txt">llms.txt</a> · <a href="/SKILL.md">SKILL.md</a></p>' +
+  '</body></html>';
+
+/** 403 for a locked page: a visible restriction page that also reports the refusal in its status. */
+function locked() {
+  return withHeaders(
+    new Response(LOCKED_HTML, {
+      status: 403,
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'content-security-policy': HTML_CSP,
+        'cache-control': 'no-store',
+        'x-robots-tag': 'noindex',
+      },
+    }),
+  );
+}
+
 function authorized(request, env, url) {
   const expected = env && env.DASHBOARD_TOKEN;
   if (!expected) return true;
@@ -168,13 +194,7 @@ async function handle(request, env, ctx) {
       return html(landingHtml(env || {}));
     case '/dashboard':
     case '/dashboard/':
-      if (!authorized(request, env, url)) {
-        return html(
-          '<!doctype html><meta charset="utf-8"><title>접근 제한</title><body style="font-family:system-ui;padding:40px">' +
-            '<h1 style="font-size:18px">접근 제한</h1><p>대시보드 토큰이 필요합니다. 주소 끝에 <code>?token=…</code>를 붙여 주세요.</p></body>',
-          { 'cache-control': 'no-store' },
-        );
-      }
+      if (!authorized(request, env, url)) return locked();
       return html(dashboardHtml(), { 'x-robots-tag': 'noindex' });
     case '/api/stats': {
       if (!authorized(request, env, url)) return json({ ok: false, error: 'unauthorized' }, 401);

@@ -109,12 +109,34 @@ test('health, robots and an unknown path', async () => {
 test('a configured dashboard token gates the dashboard and the API', async () => {
   const env = makeEnv({ DASHBOARD_TOKEN: 'secret-token' });
   const locked = await call(env, '/dashboard');
-  assert.equal(locked.status, 200);
+  assert.equal(locked.status, 403);
   assert.match(locked.text, /접근 제한/);
+  assert.match(locked.text, /\?token=/);
   const lockedApi = await call(env, '/api/stats');
   assert.equal(lockedApi.status, 401);
+  const wrong = await call(env, '/dashboard?token=nope');
+  assert.equal(wrong.status, 403);
   const open = await call(env, '/dashboard?token=secret-token');
+  assert.equal(open.status, 200);
   assert.match(open.text, /총 방문/);
+  // The page must carry the token to /api/stats, or it would render but stay empty.
+  assert.match(open.text, /'\/api\/stats' \+ \(q \? '\?token='/);
   const bearer = await call(env, '/api/stats', { headers: { authorization: 'Bearer secret-token' } });
   assert.equal(bearer.status, 200);
+  const query = await call(env, '/api/stats?token=secret-token');
+  assert.equal(query.status, 200);
+});
+
+test('the AI-facing endpoints stay open when a dashboard token is set', async () => {
+  const env = makeEnv({ DASHBOARD_TOKEN: 'secret-token' });
+  assert.equal((await call(env, '/llms.txt')).status, 200);
+  assert.equal((await call(env, '/SKILL.md')).status, 200);
+  assert.equal((await call(env, '/data/compensation_plan.json')).status, 200);
+  const mcp = await call(env, '/mcp', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+  });
+  assert.equal(mcp.status, 200);
+  assert.ok(Array.isArray(mcp.body.result.tools));
 });
