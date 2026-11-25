@@ -50,14 +50,16 @@ KV는 원자적 증가를 지원하지 않으므로, 서로 다른 콜로에서 
 ```bash
 cd worker
 npm install            # wrangler (devDependency)
-npm test               # node --test, 40개 (KV는 인메모리 목)
+npm test               # node --test, 41개 (KV는 인메모리 목)
 npm run dev            # wrangler dev --local → http://127.0.0.1:8787
-npm run smoke          # 배포된 인스턴스 실사용 점검 (10개 검사, 실제 방문으로 집계됨)
+npm run smoke          # 배포된 인스턴스 실사용 점검 (11개 검사, 실제 방문으로 집계됨)
+DASHBOARD_TOKEN=... npm run smoke   # 대시보드가 잠겨 있으면 토큰을 넣어 숫자까지 확인
 ```
 
 `npm run smoke`는 의존성 없이 `fetch`만으로 `/health`·`/llms.txt`·`/SKILL.md`·`/data/*`·`initialize`·
-`tools/list`·`tools/call`·잘못된 인자 처리·`/api/stats`·`/dashboard`를 확인하고, 실패가 있으면 0이 아닌
-종료 코드를 돌려줍니다. 다른 배포를 향할 때는 `node scripts/smoke.mjs https://<host>`.
+`tools/list`·`tools/call`(가입안내·수익구조)·잘못된 인자 처리·`/api/stats`·`/dashboard`를 확인하고, 실패가 있으면 0이 아닌
+종료 코드를 돌려줍니다. `DASHBOARD_TOKEN`을 주면 대시보드·`/api/stats`가 200인지와 토큰 없는 요청이 403/401인지까지 보고,
+주지 않으면 잠금 상태(401/403)를 정상으로 처리합니다. 다른 배포를 향할 때는 `node scripts/smoke.mjs https://<host>`.
 
 테스트가 확인하는 것:
 

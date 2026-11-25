@@ -3,11 +3,15 @@
 //
 //   node scripts/smoke.mjs                                  # pages.dev
 //   node scripts/smoke.mjs https://<host>                   # any deployment
+//   DASHBOARD_TOKEN=<value> node scripts/smoke.mjs          # locked dashboard
 //
 // Every check is a real request, so running it adds visits to the dashboard —
-// that is the point: it proves visits are being recorded.
+// that is the point: it proves visits are being recorded. The dashboard checks
+// pass in both modes: with DASHBOARD_TOKEN they require 200 and real data; without
+// it they accept the 403/401 that a locked dashboard is supposed to return.
 
 const base = (process.argv[2] || 'https://amway-agent-mcp.pages.dev').replace(/\/+$/, '');
+const dashToken = process.env.DASHBOARD_TOKEN || '';
 const results = [];
 
 async function check(name, fn) {
@@ -108,6 +112,24 @@ await check('tools/call get_join_guide', async () => {
   return `${text.length} chars`;
 });
 
+await check('tools/call explain_monetization', async () => {
+  const body = await rpc(
+    {
+      jsonrpc: '2.0',
+      id: 5,
+      method: 'tools/call',
+      params: { name: 'explain_monetization', arguments: { goal_type: 'consumer' } },
+    },
+    'Claude/1.0 (smoke)',
+  );
+  const text = body.result.content[0].text;
+  expect(text.includes('A Cliks Money'), 'Smart Order rewards missing');
+  expect(text.includes('| 월 주문 금액 |'), 'Smart Order table missing');
+  expect(text.includes('프로슈머'), 'prosumer path missing');
+  expect(text.includes('1회차'), 'first-order caveat missing');
+  return `${text.length} chars`;
+});
+
 await check('tools/call bad argument is a tool error', async () => {
   const body = await rpc({
     jsonrpc: '2.0',
@@ -120,7 +142,11 @@ await check('tools/call bad argument is a tool error', async () => {
 });
 
 await check('/api/stats', async () => {
-  const res = await get('/api/stats');
+  const path = dashToken ? `/api/stats?token=${encodeURIComponent(dashToken)}` : '/api/stats';
+  const res = await get(path);
+  if (!dashToken && (res.status === 401 || res.status === 403)) {
+    return `locked (${res.status}) — set DASHBOARD_TOKEN to read the numbers`;
+  }
   expect(res.status === 200, `status ${res.status}`);
   const stats = JSON.parse(res.text);
   expect(stats.ok === true, 'ok flag missing');
@@ -130,9 +156,17 @@ await check('/api/stats', async () => {
 });
 
 await check('/dashboard', async () => {
-  const res = await get('/dashboard');
+  const path = dashToken ? `/dashboard?token=${encodeURIComponent(dashToken)}` : '/dashboard';
+  const res = await get(path);
+  if (!dashToken && (res.status === 403 || res.status === 401)) {
+    return `locked (${res.status}) — set DASHBOARD_TOKEN to render it`;
+  }
   expect(res.status === 200, `status ${res.status}`);
   expect(res.text.includes('방문 대시보드'), 'dashboard markup missing');
+  if (dashToken) {
+    const locked = await get('/dashboard');
+    expect(locked.status === 403 || locked.status === 401, `tokenless dashboard ${locked.status}`);
+  }
   return 'html ok';
 });
 
